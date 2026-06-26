@@ -193,7 +193,7 @@ function TradingContent() {
   };
 
   return (
-    <div className="flex-1 max-w-[1600px] w-full mx-auto px-4 md:px-6 py-4 flex flex-col gap-4">
+    <div className="flex-1 w-full mx-auto px-4 md:px-8 py-4 flex flex-col gap-4">
       {/* Top compact ticker banner */}
       <RotatingBanner reverse={false} />
 

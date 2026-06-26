@@ -2,8 +2,8 @@ import React from 'react';
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-dark-card border-t border-dark-border/80 px-4 md:px-8 py-8 mt-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div className="flex flex-col items-center sm:items-start gap-1">
+    <footer className="w-full bg-dark-card border-t border-dark-border/80 px-4 md:px-8 py-4 mt-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
         <div className="flex items-center gap-2">
           <span className="font-bold text-sm tracking-wide text-gradient uppercase font-mono">
             ChadWallet
@@ -12,7 +12,8 @@ export default function Footer() {
             v1.0.0
           </span>
         </div>
-        <p className="text-[11px] text-foreground/40 mt-1">
+        <span className="text-[11px] text-foreground/20 font-mono hidden sm:inline">|</span>
+        <p className="text-[11px] text-foreground/45">
           © {new Date().getFullYear()} ChadWallet. Built for chads on Solana.
         </p>
       </div>

@@ -1,19 +1,11 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { TokenTicker } from './RotatingBanner';
 import { Activity } from 'lucide-react';
 
 interface TokenChartProps {
   token: TokenTicker;
-}
-
-declare global {
-  interface Window {
-    TradingView?: {
-      MediumWidget: new (options: Record<string, unknown>) => unknown;
-    };
-  }
 }
 
 // Maps our token symbols to valid TradingView symbols
@@ -30,62 +22,58 @@ const TRADINGVIEW_SYMBOL_MAP: Record<string, string> = {
 
 export default function TokenChart({ token }: TokenChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [scriptLoaded, setScriptLoaded] = useState(false);
+  const { symbol } = token;
 
-  // Load the TradingView Widget script dynamically
+  // Initialize/re-initialize the TradingView widget when the token symbol changes
   useEffect(() => {
-    const existingScript = document.getElementById('tradingview-widget-script');
-    if (existingScript) {
-      setTimeout(() => setScriptLoaded(true), 0);
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.id = 'tradingview-widget-script';
-    script.src = 'https://s3.tradingview.com/tv.js';
-    script.type = 'text/javascript';
-    script.async = true;
-    script.onload = () => setScriptLoaded(true);
-    document.head.appendChild(script);
-  }, []);
-
-  // Initialize/re-initialize the TradingView widget when the script loads or the token changes
-  useEffect(() => {
-    if (!scriptLoaded || !containerRef.current) return;
+    if (!containerRef.current) return;
 
     // Determine the TradingView symbol
-    const tvSymbol = TRADINGVIEW_SYMBOL_MAP[token.symbol] || 'BINANCE:SOLUSDT';
+    const tvSymbol = TRADINGVIEW_SYMBOL_MAP[symbol] || 'BINANCE:SOLUSDT';
 
     // Clear previous container contents (safely)
     containerRef.current.innerHTML = '';
-    const chartDiv = document.createElement('div');
-    chartDiv.id = `tv_chart_${token.symbol}`;
-    chartDiv.className = 'w-full h-full';
-    containerRef.current.appendChild(chartDiv);
 
-    // Initialize widget
-    if (typeof window !== 'undefined' && window.TradingView) {
-      new window.TradingView.MediumWidget({
-        symbols: [
-          [
-            `${token.name} (${token.symbol})`,
-            tvSymbol
-          ]
-        ],
-        chartOnly: false,
-        width: '100%',
-        height: '100%',
-        locale: 'en',
-        colorTheme: 'dark',
-        gridLineColor: 'rgba(31, 34, 46, 0.4)',
-        fontColor: '#9ca3af',
-        underLineColor: 'rgba(13, 242, 148, 0.15)',
-        underLineBottomColor: 'rgba(13, 242, 148, 0.0)',
-        trendLineColor: '#0df294', // Brand green
-        container_id: chartDiv.id,
-      } as Record<string, unknown>);
-    }
-  }, [scriptLoaded, token]);
+    // Create the widget container structure
+    const widgetContainer = document.createElement('div');
+    widgetContainer.className = 'tradingview-widget-container w-full h-full';
+    
+    const widgetDiv = document.createElement('div');
+    widgetDiv.className = 'tradingview-widget-container__widget w-full h-full';
+    widgetContainer.appendChild(widgetDiv);
+
+    // Create the script element
+    const script = document.createElement('script');
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+    script.type = 'text/javascript';
+    script.async = true;
+    
+    // Pass the config as JSON inside the script
+    script.innerHTML = JSON.stringify({
+      autosize: true,
+      symbol: tvSymbol,
+      interval: '15',
+      timezone: 'Etc/UTC',
+      theme: 'dark',
+      style: '1', // Candlestick
+      locale: 'en',
+      enable_publishing: false,
+      allow_symbol_change: true,
+      calendar: false,
+      support_host: 'https://www.tradingview.com',
+      isTransparent: true,
+      gridColor: 'rgba(21, 34, 56, 0.45)'
+    });
+
+    widgetContainer.appendChild(script);
+    containerRef.current.appendChild(widgetContainer);
+
+    return () => {
+      if (containerRef.current) {
+        containerRef.current.innerHTML = '';
+      }
+    };
+  }, [symbol]);
 
   return (
     <div className="w-full h-full bg-dark-panel border border-dark-border/80 rounded-2xl overflow-hidden flex flex-col">
@@ -107,12 +95,7 @@ export default function TokenChart({ token }: TokenChartProps) {
 
       {/* Widget Container */}
       <div className="flex-1 min-h-[300px] w-full bg-dark-bg p-1" ref={containerRef}>
-        {!scriptLoaded && (
-          <div className="w-full h-full flex flex-col items-center justify-center text-xs text-foreground/40 gap-3">
-            <div className="w-8 h-8 rounded-full border-2 border-brand-green border-t-transparent animate-spin"></div>
-            Loading TradingView Feed...
-          </div>
-        )}
+        {/* The widget will be mounted dynamically here */}
       </div>
     </div>
   );
