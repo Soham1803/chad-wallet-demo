@@ -43,7 +43,7 @@ function MockPrivyConsumer({ children }: { children: React.ReactNode }) {
 
   const login = () => {
     // Show a sleek local prompt mimicking social login
-    const email = prompt('Sign in via Google or Apple (Mock Demo Mode):', 'chad_investor@chadwallet.xyz');
+    const email = prompt('Sign in via Google (Mock Demo Mode):', 'chad_investor@chadwallet.xyz');
     if (email) {
       setAuthenticated(true);
       setUser({
@@ -101,7 +101,7 @@ export default function PrivyProviderWrapper({
           walletChainType: 'solana-only',
           showWalletLoginFirst: false,
         },
-        loginMethods: ['email', 'google', 'apple', 'wallet'],
+        loginMethods: ['email', 'google', 'wallet'],
         embeddedWallets: {
           solana: {
             createOnLogin: 'users-without-wallets',

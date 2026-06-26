@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { usePrivy } from '@/components/PrivyProviderWrapper';
 import { Wallet, LogOut, Download, BarChart2 } from 'lucide-react';
+import Image from 'next/image';
 
 export default function Header() {
   const pathname = usePathname();
@@ -24,10 +25,7 @@ export default function Header() {
     <header className="sticky top-0 z-40 w-full glass-panel border-b border-dark-border/80 px-4 md:px-8 py-3.5 flex items-center justify-between">
       {/* Brand Logo */}
       <Link href="/" className="flex items-center gap-2 group">
-        <div className="relative w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-green to-brand-cyan flex items-center justify-center font-black text-white text-base shadow-lg shadow-brand-green/20 group-hover:scale-105 transition-transform duration-200">
-          C
-          <div className="absolute inset-0 rounded-lg bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-        </div>
+       <Image src='/logos/dark.png' alt='ChadWallet' width={40} height={40} className='rounded-full' />
         <span className="font-extrabold text-lg tracking-wider text-gradient uppercase font-mono">
           ChadWallet
         </span>
