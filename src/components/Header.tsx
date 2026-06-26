@@ -2,13 +2,14 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { usePrivy } from '@/components/PrivyProviderWrapper';
 import { Wallet, LogOut, Download, BarChart2 } from 'lucide-react';
 import Image from 'next/image';
 
 export default function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const { login, logout, authenticated, user, ready } = usePrivy();
 
   const isTradingPage = pathname === '/trading';
@@ -20,6 +21,21 @@ export default function Header() {
   };
 
   const activeWallet = user?.wallet?.address;
+
+  // Redirection check after login completes
+  React.useEffect(() => {
+    if (ready && authenticated) {
+      if (typeof window !== 'undefined') {
+        const needsRedirect = sessionStorage.getItem('shouldRedirectToTrading');
+        if (needsRedirect === 'true') {
+          sessionStorage.removeItem('shouldRedirectToTrading');
+          if (pathname !== '/trading') {
+            router.push('/trading');
+          }
+        }
+      }
+    }
+  }, [ready, authenticated, pathname, router]);
 
   return (
     <header className="sticky top-0 z-40 w-full glass-panel border-b border-dark-border/80 px-4 md:px-8 py-3.5 flex items-center justify-between">
@@ -37,6 +53,12 @@ export default function Header() {
         {!isTradingPage ? (
           <Link
             href="/trading"
+            onClick={(e) => {
+              if (ready && !authenticated) {
+                e.preventDefault();
+                login();
+              }
+            }}
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand-green/30 text-xs font-semibold text-brand-green bg-brand-green/5 hover:bg-brand-green/10 hover:border-brand-green/50 transition-all duration-200"
           >
             <BarChart2 className="w-3.5 h-3.5" />

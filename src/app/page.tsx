@@ -126,8 +126,20 @@ export default function Home() {
     };
   }, []);
 
+  // Redirection handler after login completes
+  useEffect(() => {
+    if (ready && authenticated) {
+      const needsRedirect = sessionStorage.getItem('shouldRedirectToTrading');
+      if (needsRedirect === 'true') {
+        sessionStorage.removeItem('shouldRedirectToTrading');
+        router.push('/trading');
+      }
+    }
+  }, [ready, authenticated, router]);
+
   const handleLaunchApp = () => {
     if (ready && !authenticated) {
+      sessionStorage.setItem('shouldRedirectToTrading', 'true');
       login();
     } else {
       router.push('/trading');
@@ -199,7 +211,7 @@ export default function Home() {
           
           {/* Dashboard Preview Graphic */}
           <div 
-            onClick={() => router.push('/trading')}
+            onClick={handleLaunchApp}
             className="relative aspect-[16/9] w-full bg-dark-bg flex items-center justify-center cursor-pointer overflow-hidden p-6 md:p-8"
           >
             {/* Visual simulation of trading app */}

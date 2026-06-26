@@ -11,6 +11,8 @@ import ActivityFeed from '@/components/ActivityFeed';
 import SwapWidget from '@/components/SwapWidget';
 import Positions from '@/components/Positions';
 import { fetchRealTokenPrices } from '@/utils/solanaApi';
+import { usePrivy } from '@/components/PrivyProviderWrapper';
+import { Lock, Wallet, ArrowLeft } from 'lucide-react';
 
 // Constants matching our pre-defined tokens list
 const TOKENS: TokenTicker[] = [
@@ -241,6 +243,82 @@ function TradingContent() {
 }
 
 export default function TradingPage() {
+  const { authenticated, ready, login } = usePrivy();
+  const router = useRouter();
+  const [wasAuthenticated, setWasAuthenticated] = useState(false);
+
+  useEffect(() => {
+    if (ready && authenticated) {
+      setWasAuthenticated(true);
+    }
+  }, [ready, authenticated]);
+
+  useEffect(() => {
+    if (ready && wasAuthenticated && !authenticated) {
+      router.push('/');
+    }
+  }, [ready, authenticated, wasAuthenticated, router]);
+
+  // If not ready, show the loader
+  if (!ready) {
+    return (
+      <div className="flex flex-col min-h-screen bg-dark-bg text-foreground">
+        <Header />
+        <div className="flex-1 flex flex-col items-center justify-center text-xs text-foreground/40 gap-3">
+          <div className="w-8 h-8 rounded-full border-2 border-brand-green border-t-transparent animate-spin"></div>
+          Loading ChadWallet Session...
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // If not authenticated, render the beautiful error page
+  if (!authenticated) {
+    return (
+      <div className="flex flex-col min-h-screen bg-dark-bg text-foreground">
+        <Header />
+        
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto">
+          {/* Neon Glow Lock Icon */}
+          <div className="relative mb-6">
+            <div className="absolute inset-0 rounded-full bg-brand-red/20 blur-xl animate-pulse"></div>
+            <div className="w-20 h-20 rounded-2xl bg-dark-panel border border-brand-red/40 flex items-center justify-center text-brand-red shadow-lg shadow-brand-red/10 relative">
+              <Lock className="w-9 h-9" />
+            </div>
+          </div>
+
+          <h1 className="text-2xl font-extrabold tracking-wider uppercase font-mono text-gradient mb-3">
+            Access Denied
+          </h1>
+          <p className="text-xs text-foreground/60 leading-relaxed mb-8">
+            The trading terminal is a secured zone. You must connect your Solana embedded wallet via Privy to view order books, live charts, and execute swaps.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
+            <button
+              onClick={login}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-green to-brand-cyan text-white font-bold text-xs hover:shadow-lg hover:shadow-brand-green/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+            >
+              <Wallet className="w-4 h-4" />
+              Connect Wallet
+            </button>
+            <button
+              onClick={() => router.push('/')}
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-dark-panel hover:bg-dark-card border border-dark-border hover:border-foreground/20 text-foreground/80 hover:text-foreground text-xs font-semibold transition-all duration-200 cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Home
+            </button>
+          </div>
+        </div>
+
+        <Footer />
+      </div>
+    );
+  }
+
+  // If authenticated, show the trading screen
   return (
     <div className="flex flex-col min-h-screen bg-dark-bg text-foreground">
       {/* Navigation Header */}

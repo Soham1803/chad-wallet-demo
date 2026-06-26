@@ -21,11 +21,18 @@ const CustomPrivyContext = createContext<PrivyContextType | null>(null);
 function RealPrivyConsumer({ children }: { children: React.ReactNode }) {
   const realPrivy = useRealPrivy();
   
+  const loginWithRedirect = React.useCallback(() => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('shouldRedirectToTrading', 'true');
+    }
+    realPrivy.login();
+  }, [realPrivy]);
+
   const mappedValue: PrivyContextType = {
     ready: realPrivy.ready,
     authenticated: realPrivy.authenticated,
     user: realPrivy.user,
-    login: realPrivy.login,
+    login: loginWithRedirect,
     logout: realPrivy.logout,
   };
 
@@ -45,6 +52,9 @@ function MockPrivyConsumer({ children }: { children: React.ReactNode }) {
     // Show a sleek local prompt mimicking social login
     const email = prompt('Sign in via Google (Mock Demo Mode):', 'chad_investor@chadwallet.xyz');
     if (email) {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('shouldRedirectToTrading', 'true');
+      }
       setAuthenticated(true);
       setUser({
         wallet: { address: 'Gv5hX1sJ4qPzMewCHADx1234567890abcdefghijkl' },
