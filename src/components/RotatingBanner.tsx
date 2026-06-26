@@ -16,14 +16,14 @@ export interface TokenTicker {
 
 // Pre-defined Solana tokens with real-world decimals and addresses
 const DEFAULT_TOKENS: TokenTicker[] = [
-  { symbol: 'SOL', name: 'Solana', price: 142.45, change24h: 5.34, mint: 'So11111111111111111111111111111111111111112', decimals: 9, logo: 'https://assets.coingecko.com/coins/images/4128/large/solana.png' },
+  { symbol: 'SOL', name: 'Solana', price: 142.45, change24h: 5.34, mint: 'So11111111111111111111111111111111111111112', decimals: 9, logo: 'https://coin-images.coingecko.com/coins/images/4128/large/solana.png' },
   { symbol: 'CHAD', name: 'ChadWallet Token', price: 0.0425, change24h: 15.42, mint: 'CHADxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', decimals: 9, logo: '/logos/dark.png' },
-  { symbol: 'BONK', name: 'Bonk', price: 0.00002134, change24h: -2.15, mint: 'DezXAZ8z7PnrFcPykJzbO5JHcUqpHE8GDJEDgimOBBN', decimals: 5, logo: 'https://assets.coingecko.com/coins/images/28600/large/bonk.jpg' },
-  { symbol: 'WIF', name: 'dogwifhat', price: 2.12, change24h: 12.85, mint: 'EKpQGSJtjMFqKZ9KQGWjzD4WCo4PDaf8dZVWudqwm1W7', decimals: 6, logo: 'https://assets.coingecko.com/coins/images/33566/large/dogwifhat.jpg' },
-  { symbol: 'POPCAT', name: 'Popcat', price: 0.824, change24h: -4.32, mint: '7GCihJUkKEFW2MkyCcLrC2j221uJWo95bSdWfzcrd2K7', decimals: 6, logo: 'https://assets.coingecko.com/coins/images/34320/large/popcat.png' },
-  { symbol: 'JUP', name: 'Jupiter', price: 0.785, change24h: 1.45, mint: 'JUPyiwrYd2CQCChjJUiKVtH7jEEJ22u2w7j6r2FmWZq', decimals: 6, logo: 'https://assets.coingecko.com/coins/images/34188/large/jup.png' },
-  { symbol: 'MEW', name: 'cat in a dogs world', price: 0.00412, change24h: 8.76, mint: 'MEW143a5742Cn6SZ8ssz7M5D1AL2ey3tA9G9G1N7R', decimals: 6, logo: 'https://assets.coingecko.com/coins/images/35921/large/mew.jpg' },
-  { symbol: 'BOME', name: 'BOOK OF MEME', price: 0.00845, change24h: -0.84, mint: 'uk3wueUrw3u8Htxu4mGWiEwNeLJTfTvCnSfCcSCL67E', decimals: 6, logo: 'https://assets.coingecko.com/coins/images/36056/large/bome.jpg' },
+  { symbol: 'BONK', name: 'Bonk', price: 0.00002134, change24h: -2.15, mint: 'DezXAZ8z7PnrFcPykJzbO5JHcUqpHE8GDJEDgimOBBN', decimals: 5, logo: 'https://coin-images.coingecko.com/coins/images/28600/large/bonk.jpg' },
+  { symbol: 'WIF', name: 'dogwifhat', price: 2.12, change24h: 12.85, mint: 'EKpQGSJtjMFqKZ9KQGWjzD4WCo4PDaf8dZVWudqwm1W7', decimals: 6, logo: 'https://coin-images.coingecko.com/coins/images/33566/large/dogwifhat.jpg' },
+  { symbol: 'POPCAT', name: 'Popcat', price: 0.824, change24h: -4.32, mint: '7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr', decimals: 6, logo: 'https://coin-images.coingecko.com/coins/images/33760/large/image.jpg' },
+  { symbol: 'JUP', name: 'Jupiter', price: 0.785, change24h: 1.45, mint: 'JUPyiwrYd2CQCChjJUiKVtH7jEEJ22u2w7j6r2FmWZq', decimals: 6, logo: 'https://coin-images.coingecko.com/coins/images/34188/large/jup.png' },
+  { symbol: 'MEW', name: 'cat in a dogs world', price: 0.00412, change24h: 8.76, mint: 'MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5', decimals: 6, logo: 'https://coin-images.coingecko.com/coins/images/36440/large/MEW.png' },
+  { symbol: 'BOME', name: 'BOOK OF MEME', price: 0.00845, change24h: -0.84, mint: 'ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82', decimals: 6, logo: 'https://coin-images.coingecko.com/coins/images/36071/large/bome.png' },
 ];
 
 interface RotatingBannerProps {
