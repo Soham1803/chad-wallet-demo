@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { TokenTicker } from './RotatingBanner';
 import { Share2, Sparkles, X, TrendingUp } from 'lucide-react';
 
@@ -46,9 +47,19 @@ export default function Positions({ positions, onClosePosition, solPrice = 142.4
               >
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-brand-green to-brand-cyan flex items-center justify-center text-[10px] font-black text-white">
-                      {pos.token.symbol.substring(0, 2)}
-                    </div>
+                    {pos.token.logo ? (
+                      <Image
+                        src={pos.token.logo}
+                        alt={pos.token.symbol}
+                        width={24}
+                        height={24}
+                        className="rounded-full object-cover shadow-inner select-none bg-dark-bg"
+                      />
+                    ) : (
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-brand-green to-brand-cyan flex items-center justify-center text-[10px] font-black text-white">
+                        {pos.token.symbol.substring(0, 2)}
+                      </div>
+                    )}
                     <div>
                       <span className="font-bold text-xs text-foreground/90">{pos.token.symbol}</span>
                       <span className="text-[9px] text-foreground/40 font-mono block">

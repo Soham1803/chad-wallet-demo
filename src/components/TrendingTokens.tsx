@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Search, Flame, TrendingUp } from 'lucide-react';
 import { TokenTicker } from './RotatingBanner';
 
@@ -94,10 +95,20 @@ export default function TrendingTokens({
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  {/* Token logo placeholder */}
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-green to-brand-cyan flex items-center justify-center text-xs font-black text-white shadow-inner select-none">
-                    {token.symbol.substring(0, 2)}
-                  </div>
+                  {/* Token logo */}
+                  {token.logo ? (
+                    <Image
+                      src={token.logo}
+                      alt={token.symbol}
+                      width={32}
+                      height={32}
+                      className="rounded-full object-cover shadow-inner select-none bg-dark-bg"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-green to-brand-cyan flex items-center justify-center text-xs font-black text-white shadow-inner select-none">
+                      {token.symbol.substring(0, 2)}
+                    </div>
+                  )}
                   
                   <div>
                     <div className="flex items-center gap-1.5">
