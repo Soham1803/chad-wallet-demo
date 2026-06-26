@@ -10,17 +10,18 @@ import TokenChart from '@/components/TokenChart';
 import ActivityFeed from '@/components/ActivityFeed';
 import SwapWidget from '@/components/SwapWidget';
 import Positions from '@/components/Positions';
+import { fetchRealTokenPrices } from '@/utils/solanaApi';
 
 // Constants matching our pre-defined tokens list
 const TOKENS: TokenTicker[] = [
-  { symbol: 'SOL', name: 'Solana', price: 142.45, change24h: 5.34, mint: 'So11111111111111111111111111111111111111112' },
-  { symbol: 'CHAD', name: 'ChadWallet Token', price: 0.0425, change24h: 69.42, mint: 'CHADxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' },
-  { symbol: 'BONK', name: 'Bonk', price: 0.00002134, change24h: -2.15, mint: 'DezXAZ8z7PnrFcPykJzbO5JHcUqpHE8GDJEDgimOBBN' },
-  { symbol: 'WIF', name: 'dogwifhat', price: 2.12, change24h: 12.85, mint: 'EKpQGSJtjMFqKZ9KQGWjzD4WCo4PDaf8dZVWudqwm1W7' },
-  { symbol: 'POPCAT', name: 'Popcat', price: 0.824, change24h: -4.32, mint: '7GCihJUkKEFW2MkyCcLrC2j221uJWo95bSdWfzcrd2K7' },
-  { symbol: 'JUP', name: 'Jupiter', price: 0.785, change24h: 1.45, mint: 'JUPyiwrYd2CQCChjJUiKVtH7jEEJ22u2w7j6r2FmWZq' },
-  { symbol: 'MEW', name: 'cat in a dogs world', price: 0.00412, change24h: 8.76, mint: 'MEW143a5742Cn6SZ8ssz7M5D1AL2ey3tA9G9G1N7R' },
-  { symbol: 'BOME', name: 'BOOK OF MEME', price: 0.00845, change24h: -0.84, mint: 'uk3wueUrw3u8Htxu4mGWiEwNeLJTfTvCnSfCcSCL67E' },
+  { symbol: 'SOL', name: 'Solana', price: 142.45, change24h: 5.34, mint: 'So11111111111111111111111111111111111111112', decimals: 9 },
+  { symbol: 'CHAD', name: 'ChadWallet Token', price: 0.0425, change24h: 15.42, mint: 'CHADxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', decimals: 9 },
+  { symbol: 'BONK', name: 'Bonk', price: 0.00002134, change24h: -2.15, mint: 'DezXAZ8z7PnrFcPykJzbO5JHcUqpHE8GDJEDgimOBBN', decimals: 5 },
+  { symbol: 'WIF', name: 'dogwifhat', price: 2.12, change24h: 12.85, mint: 'EKpQGSJtjMFqKZ9KQGWjzD4WCo4PDaf8dZVWudqwm1W7', decimals: 6 },
+  { symbol: 'POPCAT', name: 'Popcat', price: 0.824, change24h: -4.32, mint: '7GCihJUkKEFW2MkyCcLrC2j221uJWo95bSdWfzcrd2K7', decimals: 6 },
+  { symbol: 'JUP', name: 'Jupiter', price: 0.785, change24h: 1.45, mint: 'JUPyiwrYd2CQCChjJUiKVtH7jEEJ22u2w7j6r2FmWZq', decimals: 6 },
+  { symbol: 'MEW', name: 'cat in a dogs world', price: 0.00412, change24h: 8.76, mint: 'MEW143a5742Cn6SZ8ssz7M5D1AL2ey3tA9G9G1N7R', decimals: 6 },
+  { symbol: 'BOME', name: 'BOOK OF MEME', price: 0.00845, change24h: -0.84, mint: 'uk3wueUrw3u8Htxu4mGWiEwNeLJTfTvCnSfCcSCL67E', decimals: 6 },
 ];
 
 interface PositionItem {
@@ -47,7 +48,9 @@ function TradingContent() {
     CHAD: 1000,
   });
 
-  const SOL_PRICE = 142.45;
+  // Calculate live SOL price dynamically from state
+  const solTokenItem = liveTokens.find((t) => t.symbol === 'SOL');
+  const SOL_PRICE = solTokenItem ? solTokenItem.price : 142.45;
 
   // Active positions state
   const [positions, setPositions] = useState<PositionItem[]>([
@@ -70,30 +73,24 @@ function TradingContent() {
     }
   }, [searchParams, liveTokens, selectedToken]);
 
-  // Simulating live token price oscillations matching RotatingBanner
+  // Fetch real-time token prices and changes from DexScreener
   useEffect(() => {
-    const interval = setInterval(() => {
-      setLiveTokens((prevTokens) => {
-        const updated = prevTokens.map((token) => {
-          const percentChange = (Math.random() - 0.5) * 0.4;
-          const newPrice = token.price * (1 + percentChange / 100);
-          const newChange = token.change24h + (Math.random() - 0.5) * 0.1;
-          return {
-            ...token,
-            price: Number(newPrice.toFixed(token.price < 0.01 ? 8 : 4)),
-            change24h: Number(newChange.toFixed(2)),
-          };
+    const updatePrices = async () => {
+      setLiveTokens((prev) => {
+        fetchRealTokenPrices(prev).then((updated) => {
+          setLiveTokens(updated);
+          // Sync selected token
+          const updatedSelected = updated.find((t) => t.symbol === selectedToken.symbol);
+          if (updatedSelected && updatedSelected.price !== selectedToken.price) {
+            setSelectedToken(updatedSelected);
+          }
         });
-        
-        // Sync the currently selected token from the updated live tokens list
-        const updatedSelected = updated.find((t) => t.symbol === selectedToken.symbol);
-        if (updatedSelected) {
-          setSelectedToken(updatedSelected);
-        }
-
-        return updated;
+        return prev;
       });
-    }, 4000);
+    };
+
+    updatePrices(); // Initial load
+    const interval = setInterval(updatePrices, 15000); // Polling every 15s
 
     return () => clearInterval(interval);
   }, [selectedToken]);
@@ -216,7 +213,7 @@ function TradingContent() {
             <TokenChart token={selectedToken} />
           </div>
           <div className="h-[280px]">
-            <ActivityFeed token={selectedToken} />
+            <ActivityFeed token={selectedToken} solPrice={SOL_PRICE} />
           </div>
         </div>
 
@@ -227,11 +224,13 @@ function TradingContent() {
             solBalance={solBalance}
             tokenBalance={tokenBalances[selectedToken.symbol] || 0}
             onTrade={handleTradeExecution}
+            solPrice={SOL_PRICE}
           />
           <div className="flex-1">
             <Positions
               positions={positions}
               onClosePosition={handleClosePosition}
+              solPrice={SOL_PRICE}
             />
           </div>
         </div>

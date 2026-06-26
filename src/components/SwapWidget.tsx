@@ -5,12 +5,14 @@ import { usePrivy } from '@/components/PrivyProviderWrapper';
 import { TokenTicker } from './RotatingBanner';
 import { ArrowUpDown, Settings2, ShieldCheck, Wallet } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { fetchJupiterQuote } from '@/utils/solanaApi';
 
 interface SwapWidgetProps {
   token: TokenTicker;
   solBalance: number;
   tokenBalance: number;
   onTrade: (action: 'BUY' | 'SELL', token: TokenTicker, amountToken: number, amountSol: number) => void;
+  solPrice?: number;
 }
 
 export default function SwapWidget({
@@ -18,6 +20,7 @@ export default function SwapWidget({
   solBalance,
   tokenBalance,
   onTrade,
+  solPrice = 142.45,
 }: SwapWidgetProps) {
   const { login, authenticated, ready } = usePrivy();
   const [activeTab, setActiveTab] = useState<'BUY' | 'SELL'>('BUY');
@@ -27,58 +30,60 @@ export default function SwapWidget({
   const [showSettings, setShowSettings] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // SOL price is fixed at $142.45 for simple USD conversions
-  const SOL_PRICE = 142.45;
-
   // Sync inputs based on active tab and rates
   const handleAmountFromChange = (val: string) => {
     setAmountFrom(val);
-    if (!val || isNaN(Number(val))) {
-      setAmountTo('');
-      return;
-    }
-    
-    const numVal = Number(val);
-    if (activeTab === 'BUY') {
-      // From: SOL, To: Token
-      // 1 SOL = SOL_PRICE / token.price Tokens
-      const tokenValue = (numVal * SOL_PRICE) / token.price;
-      setAmountTo(tokenValue.toFixed(token.price > 1 ? 4 : 0));
-    } else {
-      // From: Token, To: SOL
-      const solValue = (numVal * token.price) / SOL_PRICE;
-      setAmountTo(solValue.toFixed(4));
-    }
   };
 
-  const handleAmountToChange = (val: string) => {
-    setAmountTo(val);
-    if (!val || isNaN(Number(val))) {
-      setAmountFrom('');
-      return;
+  // Fetch real swap quotes from Jupiter API as the user types
+  useEffect(() => {
+    const numFrom = Number(amountFrom);
+    if (isNaN(numFrom) || numFrom <= 0) {
+      const t = setTimeout(() => setAmountTo(''), 0);
+      return () => clearTimeout(t);
     }
 
-    const numVal = Number(val);
-    if (activeTab === 'BUY') {
-      // To: Token, From: SOL
-      const solValue = (numVal * token.price) / SOL_PRICE;
-      setAmountFrom(solValue.toFixed(4));
-    } else {
-      // To: SOL, From: Token
-      const tokenValue = (numVal * SOL_PRICE) / token.price;
-      setAmountFrom(tokenValue.toFixed(token.price > 1 ? 4 : 0));
+    // Skip Jupiter calls if trading our mock CHAD token
+    if (token.symbol === 'CHAD') {
+      const rate = solPrice / token.price;
+      const t = setTimeout(() => {
+        if (activeTab === 'BUY') {
+          setAmountTo((numFrom * rate).toFixed(4));
+        } else {
+          setAmountTo((numFrom / rate).toFixed(4));
+        }
+      }, 0);
+      return () => clearTimeout(t);
     }
-  };
+
+    const delayDebounceFn = setTimeout(async () => {
+      setLoading(true);
+      const inputMint = activeTab === 'BUY' ? 'So11111111111111111111111111111111111111112' : token.mint;
+      const outputMint = activeTab === 'BUY' ? token.mint : 'So11111111111111111111111111111111111111112';
+      const inputDecimals = activeTab === 'BUY' ? 9 : token.decimals;
+      const outputDecimals = activeTab === 'BUY' ? token.decimals : 9;
+
+      const atomicAmount = Math.floor(numFrom * Math.pow(10, inputDecimals));
+
+      const quote = await fetchJupiterQuote(inputMint, outputMint, atomicAmount, slippage * 100);
+      setLoading(false);
+
+      if (quote) {
+        const outFloat = quote.outAmount / Math.pow(10, outputDecimals);
+        setAmountTo(outFloat.toFixed(outputDecimals === 9 ? 6 : 4));
+      }
+    }, 500); // 500ms debounce to prevent API spamming
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [amountFrom, token, activeTab, slippage, solPrice]);
 
   // Reset inputs when selected token or tab changes
   useEffect(() => {
-    if (amountFrom !== '' || amountTo !== '') {
-      setTimeout(() => {
-        setAmountFrom('');
-        setAmountTo('');
-      }, 0);
-    }
-  }, [token, activeTab, amountFrom, amountTo]);
+    setTimeout(() => {
+      setAmountFrom('');
+      setAmountTo('');
+    }, 0);
+  }, [token, activeTab]);
 
   const handleSetMax = () => {
     if (activeTab === 'BUY') {
@@ -135,7 +140,7 @@ export default function SwapWidget({
   // Simple stats calculation for details box
   const numFrom = Number(amountFrom) || 0;
   const numTo = Number(amountTo) || 0;
-  const rate = SOL_PRICE / token.price;
+  const rate = solPrice / token.price;
   const priceImpact = numFrom > 0 ? (numFrom > 50 ? '3.4%' : '0.12%') : '0.00%';
 
   return (
@@ -262,7 +267,7 @@ export default function SwapWidget({
             type="text"
             placeholder="0.00"
             value={amountTo}
-            onChange={(e) => handleAmountToChange(e.target.value)}
+            readOnly
             disabled={loading}
             className="flex-1 bg-transparent text-lg font-bold font-mono text-foreground/95 focus:outline-none placeholder:text-foreground/20"
           />
@@ -294,7 +299,7 @@ export default function SwapWidget({
           <div className="flex justify-between border-t border-dark-border/30 pt-1.5 mt-1.5 text-foreground/75 font-semibold">
             <span>Estimated Value</span>
             <span>
-              ${(activeTab === 'BUY' ? numFrom * SOL_PRICE : numTo * SOL_PRICE).toFixed(2)}
+              ${(activeTab === 'BUY' ? numFrom * solPrice : numTo * solPrice).toFixed(2)}
             </span>
           </div>
         </div>

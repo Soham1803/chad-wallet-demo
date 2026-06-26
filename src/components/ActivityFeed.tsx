@@ -3,9 +3,11 @@
 import React, { useEffect, useState } from 'react';
 import { TokenTicker } from './RotatingBanner';
 import { Users, History } from 'lucide-react';
+import { fetchOnChainSignatures } from '@/utils/solanaApi';
 
 interface ActivityFeedProps {
   token: TokenTicker;
+  solPrice?: number;
 }
 
 interface TradeItem {
@@ -25,7 +27,7 @@ interface HolderItem {
   isPool?: boolean;
 }
 
-export default function ActivityFeed({ token }: ActivityFeedProps) {
+export default function ActivityFeed({ token, solPrice = 142.45 }: ActivityFeedProps) {
   const [activeTab, setActiveTab] = useState<'trades' | 'holders'>('trades');
   const [trades, setTrades] = useState<TradeItem[]>([]);
 
@@ -66,51 +68,56 @@ export default function ActivityFeed({ token }: ActivityFeedProps) {
     },
   ];
 
-  // Initialize mock trades when token changes
+  // Fetch real on-chain transaction logs for the active token from Solana network
   useEffect(() => {
-    const initialTrades: TradeItem[] = Array.from({ length: 6 }).map((_, idx) => {
-      const isBuy = Math.random() > 0.45;
-      const amountSol = Number((Math.random() * 8 + 0.1).toFixed(2));
-      const amountToken = Number((amountSol * (142.45 / token.price)).toFixed(token.price > 1 ? 2 : 0));
-      return {
-        id: `trade-${idx}-${Date.now()}`,
-        wallet: `${Math.random().toString(36).substring(2, 6)}...${Math.random().toString(36).substring(2, 6)}`,
-        action: isBuy ? 'BUY' : 'SELL',
-        amountSol,
-        amountToken,
-        time: `${idx * 2 + 1}m ago`,
-      };
-    });
-    
-    // Defer state update to prevent react-hooks/set-state-in-effect warning
-    setTimeout(() => setTrades(initialTrades), 0);
-  }, [token]);
+    let active = true;
 
-  // Simulating live incoming trades
-  useEffect(() => {
-    const interval = setInterval(() => {
+    const loadRealTrades = async () => {
       if (activeTab !== 'trades') return;
 
-      const isBuy = Math.random() > 0.4;
-      const amountSol = Number((Math.random() * 15 + 0.05).toFixed(2));
-      const amountToken = Number((amountSol * (142.45 / token.price)).toFixed(token.price > 1 ? 2 : 0));
-      const wallets = ['D6z...3s', 'H8y...4q', 'K9x...1w', 'G7p...9z', 'L4r...2t', 'X1s...7y'];
-      const randomWallet = wallets[Math.floor(Math.random() * wallets.length)];
+      const signatures = await fetchOnChainSignatures(token.mint, 8);
+      if (!active) return;
 
-      const newTrade: TradeItem = {
-        id: `trade-${Date.now()}`,
-        wallet: randomWallet,
-        action: isBuy ? 'BUY' : 'SELL',
-        amountSol,
-        amountToken,
-        time: 'Just now',
-      };
+      if (signatures.length === 0) {
+        // Fallback mock trades if RPC fails or for custom CHAD token
+        const mockTrades: TradeItem[] = Array.from({ length: 6 }).map((_, idx) => {
+          const isBuy = Math.random() > 0.45;
+          const amountSol = Number((Math.random() * 8 + 0.1).toFixed(2));
+          const amountToken = Number((amountSol * (solPrice / token.price)).toFixed(token.price > 1 ? 2 : 0));
+          return {
+            id: `trade-${idx}-${Date.now()}`,
+            wallet: `${Math.random().toString(36).substring(2, 6)}...${Math.random().toString(36).substring(2, 6)}`,
+            action: isBuy ? 'BUY' : 'SELL',
+            amountSol,
+            amountToken,
+            time: `${idx * 2 + 1}m ago`,
+          };
+        });
+        setTrades(mockTrades);
+        return;
+      }
 
-      setTrades((prev) => [newTrade, ...prev.slice(0, 9)]);
-    }, 4500);
+      // Map real on-chain transaction data
+      const mappedTrades: TradeItem[] = signatures.map((tx) => ({
+        id: tx.signature,
+        wallet: tx.signature.slice(0, 4) + '...' + tx.signature.slice(-4),
+        action: tx.isBuy ? 'BUY' : 'SELL',
+        amountSol: tx.amountSol,
+        amountToken: Number((tx.amountSol * (solPrice / token.price)).toFixed(token.price > 1 ? 2 : 0)),
+        time: tx.timeAgo,
+      }));
 
-    return () => clearInterval(interval);
-  }, [token, activeTab]);
+      setTrades(mappedTrades);
+    };
+
+    loadRealTrades();
+    const interval = setInterval(loadRealTrades, 8000); // Polling every 8s
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [token, activeTab, solPrice]);
 
   return (
     <div className="flex flex-col bg-dark-panel border border-dark-border/80 rounded-2xl overflow-hidden h-full">

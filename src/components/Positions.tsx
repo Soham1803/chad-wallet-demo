@@ -14,12 +14,11 @@ interface PositionItem {
 interface PositionsProps {
   positions: PositionItem[];
   onClosePosition: (token: TokenTicker) => void;
+  solPrice?: number;
 }
 
-export default function Positions({ positions, onClosePosition }: PositionsProps) {
+export default function Positions({ positions, onClosePosition, solPrice = 142.45 }: PositionsProps) {
   const [sharePosition, setSharePosition] = useState<PositionItem | null>(null);
-
-  const SOL_PRICE = 142.45;
 
   return (
     <div className="bg-dark-panel border border-dark-border/80 rounded-2xl p-4 flex flex-col gap-3">
@@ -33,7 +32,7 @@ export default function Positions({ positions, onClosePosition }: PositionsProps
       <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
         {positions.length > 0 ? (
           positions.map((pos) => {
-            const currentPrice = pos.token.symbol === 'SOL' ? SOL_PRICE : pos.token.price;
+            const currentPrice = pos.token.symbol === 'SOL' ? solPrice : pos.token.price;
             const entryValue = pos.balance * pos.entryPrice;
             const currentValue = pos.balance * currentPrice;
             const pnlUsd = currentValue - entryValue;
@@ -111,7 +110,7 @@ export default function Positions({ positions, onClosePosition }: PositionsProps
 
       {/* Share P&L Modal Overlay */}
       {sharePosition && (() => {
-        const currentPrice = sharePosition.token.symbol === 'SOL' ? SOL_PRICE : sharePosition.token.price;
+        const currentPrice = sharePosition.token.symbol === 'SOL' ? solPrice : sharePosition.token.price;
         const entryValue = sharePosition.balance * sharePosition.entryPrice;
         const currentValue = sharePosition.balance * currentPrice;
         const pnlUsd = currentValue - entryValue;
