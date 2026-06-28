@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect } from "react";
 import { usePrivy } from "@/components/PrivyProviderWrapper";
-import { ArrowRight, Flame, QrCode, MessageSquare } from "lucide-react";
+import { Flame } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import RotatingBanner from "@/components/RotatingBanner";
@@ -14,125 +13,9 @@ import StartTradingBtn from "@/components/buttons/StartTrading";
 import DownloadAppBtn from "@/components/buttons/DownloadAppBtn";
 import useResponsive from "@/hooks/useResponsive";
 
-// Mock live-updating social theses to emulate the fomo.family social layer
-interface ThesisPost {
-  id: number;
-  user: string;
-  avatar: string;
-  token: string;
-  action: "BUY" | "SELL";
-  amount: string;
-  time: string;
-  content: string;
-}
-
-const INITIAL_THESES: ThesisPost[] = [
-  {
-    id: 1,
-    user: "SolanaSlayer.sol",
-    avatar: "SS",
-    token: "SOL",
-    action: "BUY",
-    amount: "12.5 SOL",
-    time: "2m ago",
-    content:
-      "Solana looks extremely strong here, holding support. Target is $160 by Friday. LFG!",
-  },
-  {
-    id: 2,
-    user: "MemeLord_99",
-    avatar: "ML",
-    token: "WIF",
-    action: "BUY",
-    amount: "4.2k WIF",
-    time: "5m ago",
-    content: "Hat stays on. Volume is rising on Jup, breakout imminent.",
-  },
-  {
-    id: 3,
-    user: "ChadTrader_Alpha",
-    avatar: "CT",
-    token: "CHAD",
-    action: "BUY",
-    amount: "80,000 CHAD",
-    time: "8m ago",
-    content:
-      "ChadWallet web launch is clean. This utility token is severely undervalued. Buying the dip.",
-  },
-  {
-    id: 4,
-    user: "DegenerateCat",
-    avatar: "DC",
-    token: "POPCAT",
-    action: "SELL",
-    amount: "10,000 POPCAT",
-    time: "12m ago",
-    content: "Taking some profit after a nice 20% pump. Will rebuy lower.",
-  },
-];
-
 export default function Home() {
-  const router = useRouter();
-  const { login, authenticated, ready } = usePrivy();
-  const [theses, setTheses] = useState<ThesisPost[]>(INITIAL_THESES);
-  const [tps, setTps] = useState(2450);
-  const [activeUsers, setActiveUsers] = useState(12842);
-
+  const { authenticated, ready } = usePrivy();
   const { isMobile } = useResponsive();
-
-  // Live simulation of metrics and feed activity
-  useEffect(() => {
-    const statsInterval = setInterval(() => {
-      setTps(Math.floor(2200 + Math.random() * 600));
-      setActiveUsers((prev) => prev + Math.floor(Math.random() * 5 - 2));
-    }, 2500);
-
-    const feedInterval = setInterval(() => {
-      // Flashes a new thesis feed item
-      const users = [
-        "BlockChad.sol",
-        "SolGimi",
-        "MemeWhisperer",
-        "PumpEnjoyer.sol",
-        "AlphaSeeker",
-      ];
-      const avatars = ["BC", "SG", "MW", "PE", "AS"];
-      const tokens = ["SOL", "CHAD", "WIF", "POPCAT", "BONK", "JUP"];
-      const actions: ("BUY" | "SELL")[] = ["BUY", "BUY", "BUY", "SELL"];
-      const contents = [
-        "Breaking key resistance, accumulation phase looks complete.",
-        "High whale wallet inflows in the last 10 minutes. Buying.",
-        "This is literally free money right here. Full porting in.",
-        "Short term top is in, rotating capital to other Solana memecoins.",
-        "Super low slippage swap on ChadWallet, executing next entry.",
-      ];
-
-      const randomIndex = Math.floor(Math.random() * users.length);
-      const randomToken = tokens[Math.floor(Math.random() * tokens.length)];
-      const randomAction = actions[Math.floor(Math.random() * actions.length)];
-
-      const newPost: ThesisPost = {
-        id: Date.now(),
-        user: users[randomIndex],
-        avatar: avatars[randomIndex],
-        token: randomToken,
-        action: randomAction,
-        amount:
-          randomAction === "BUY"
-            ? `${(Math.random() * 20 + 2).toFixed(1)} SOL`
-            : `${Math.floor(Math.random() * 10000 + 500)} ${randomToken}`,
-        time: "Just now",
-        content: contents[randomIndex],
-      };
-
-      setTheses((prev) => [newPost, ...prev.slice(0, 3)]);
-    }, 9000);
-
-    return () => {
-      clearInterval(statsInterval);
-      clearInterval(feedInterval);
-    };
-  }, []);
 
   // Redirection handler for authenticated users: automatically push to trading page (desktop only)
   useEffect(() => {
@@ -142,15 +25,6 @@ export default function Home() {
       }
     }
   }, [ready, authenticated]);
-
-  const handleLaunchApp = () => {
-    if (ready && !authenticated) {
-      sessionStorage.setItem("shouldRedirectToTrading", "true");
-      login();
-    } else {
-      router.push("/trading");
-    }
-  };
 
   return (
     <div className="flex flex-col min-h-screen bg-dark-bg text-foreground overflow-x-hidden">

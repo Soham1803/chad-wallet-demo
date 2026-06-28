@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { usePrivy } from "@/components/PrivyProviderWrapper";
 import { LogOut } from "lucide-react";
 import Image from "next/image";
@@ -11,7 +11,6 @@ import useResponsive from "@/hooks/useResponsive";
 
 export default function Header() {
   const pathname = usePathname();
-  const router = useRouter();
   const { login, logout, authenticated, user, ready } = usePrivy();
 
   const { isMobile } = useResponsive();

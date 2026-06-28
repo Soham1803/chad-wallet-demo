@@ -1,6 +1,5 @@
 import { useRouter } from "next/navigation";
 import { usePrivy } from "./PrivyProviderWrapper";
-import { Zap } from "lucide-react";
 import Image from "next/image";
 
 export default function DummyTradingPanel() {

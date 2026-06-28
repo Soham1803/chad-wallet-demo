@@ -26,13 +26,14 @@ export default function TokenChart({ token }: TokenChartProps) {
 
   // Initialize/re-initialize the TradingView widget when the token symbol changes
   useEffect(() => {
-    if (!containerRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
 
     // Determine the TradingView symbol
     const tvSymbol = TRADINGVIEW_SYMBOL_MAP[symbol] || "BINANCE:SOLUSDT";
 
     // Clear previous container contents (safely)
-    containerRef.current.innerHTML = "";
+    container.innerHTML = "";
 
     // Create the widget container structure
     const widgetContainer = document.createElement("div");
@@ -70,11 +71,11 @@ export default function TokenChart({ token }: TokenChartProps) {
     });
 
     widgetContainer.appendChild(script);
-    containerRef.current.appendChild(widgetContainer);
+    container.appendChild(widgetContainer);
 
     return () => {
-      if (containerRef.current) {
-        containerRef.current.innerHTML = "";
+      if (container) {
+        container.innerHTML = "";
       }
     };
   }, [symbol]);
