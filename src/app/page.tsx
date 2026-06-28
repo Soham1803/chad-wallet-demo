@@ -321,7 +321,19 @@ export default function Home() {
       </section>
 
       {/* rotating banner (fomo.family feel) */}
-      <section className="relative flex flex-col items-center justify-center w-full h-screen py-52 px-4 md:px-8 max-w-5xl mx-auto">
+      <section className="relative flex flex-col items-center justify-center w-screen h-[120vh] py-52 px-4 md:px-8 mx-auto overflow-hidden">
+        <div className="absolute inset-0 w-full h-full pointer-events-none">
+          <Image
+            alt="BG"
+            src="/images/web3-bg.png"
+            fill
+            className="object-cover opacity-10"
+            style={{
+              maskImage: 'linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
+            }}
+          />
+        </div>
         <div className=" text-teal-50 text-5xl">
           a trading app <br /> for the chads
         </div>
@@ -345,7 +357,7 @@ export default function Home() {
             Download App
           </a>
         </div>{" "}
-        <div className="absolute top-60 left-1/2 -translate-x-1/2 bg-transparent rounded-full w-1/2 animate-spin [animation-duration:20s] [animation-direction:reverse] aspect-square">
+        <div className="absolute top-60 left-1/2 -translate-x-1/2 bg-transparent rounded-full w-1/4 animate-spin [animation-duration:20s] [animation-direction:reverse] aspect-square">
           <Image
             width={10000}
             height={10000}
@@ -354,7 +366,7 @@ export default function Home() {
             unoptimized
           />
         </div>
-        <div className="absolute bg-transparent rounded-full animate-spin [animation-duration:30s] aspect-square">
+        <div className="absolute w-1/2 bg-transparent rounded-full animate-spin [animation-duration:30s] aspect-square">
           <Image
             width={10000}
             height={10000}
