@@ -152,6 +152,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-dark-bg text-foreground overflow-x-hidden">
+      <RotatingBanner />
       <Image
         src="/images/space-bg.webp"
         alt="Space Background"
@@ -252,41 +253,6 @@ export default function Home() {
         </div>
         {/* Interactive App Mockup Preview */}
         <DummyTradingPanel />
-
-        <div className="max-w-6xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          <div>
-            <div className="text-3xl font-extrabold text-brand-green font-mono">
-              {tps}
-            </div>
-            <div className="text-xs text-foreground/40 mt-1 uppercase tracking-wider font-semibold">
-              Solana Live TPS
-            </div>
-          </div>
-          <div>
-            <div className="text-3xl font-extrabold text-foreground font-mono">
-              {activeUsers.toLocaleString()}
-            </div>
-            <div className="text-xs text-foreground/40 mt-1 uppercase tracking-wider font-semibold">
-              Active Chads Today
-            </div>
-          </div>
-          <div>
-            <div className="text-3xl font-extrabold text-brand-cyan font-mono">
-              $1.4M+
-            </div>
-            <div className="text-xs text-foreground/40 mt-1 uppercase tracking-wider font-semibold">
-              Volume Handled
-            </div>
-          </div>
-          <div>
-            <div className="text-3xl font-extrabold text-brand-cyan font-mono">
-              &lt; 1.2s
-            </div>
-            <div className="text-xs text-foreground/40 mt-1 uppercase tracking-wider font-semibold">
-              Average Execution
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* Features Showcase Section */}

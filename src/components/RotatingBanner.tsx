@@ -125,7 +125,7 @@ export default function RotatingBanner({
   const marqueeItems = [...tokens, ...tokens, ...tokens, ...tokens];
 
   return (
-    <div className="w-full bg-dark-card border-y border-dark-border py-2 overflow-hidden flex select-none">
+    <div className="w-full bg-dark-card border-y border-dark-border py-2 overflow-hidden flex select-none z-10">
       <div
         className={`flex whitespace-nowrap min-w-full shrink-0 gap-6 items-center ${
           reverse ? "animate-marquee-reverse" : "animate-marquee"
