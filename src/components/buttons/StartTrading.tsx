@@ -1,4 +1,4 @@
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/components/PrivyProviderWrapper";
 import { ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 
