@@ -16,6 +16,7 @@ import {
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import RotatingBanner from '@/components/RotatingBanner';
+import Image from 'next/image';
 
 // Mock live-updating social theses to emulate the fomo.family social layer
 interface ThesisPost {
@@ -148,11 +149,12 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-dark-bg text-foreground overflow-x-hidden">
+      <Image src='/images/space-bg.webp' alt='Space Background' width={1000} height={1000} className='absolute top-0 left-0 w-full h-full object-cover' />
       {/* Global Navigation */}
       <Header />
 
       {/* Top Banner (Scrolling ticker) */}
-      <RotatingBanner reverse={false} />
+      {/* <RotatingBanner reverse={false} /> */}
 
       {/* Main Hero Section */}
       <section className="relative w-full pt-16 pb-24 px-4 md:px-8 max-w-7xl mx-auto flex flex-col items-center text-center">

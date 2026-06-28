@@ -1,22 +1,23 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { usePrivy } from '@/components/PrivyProviderWrapper';
-import { Wallet, LogOut, Download, BarChart2 } from 'lucide-react';
-import Image from 'next/image';
+import React from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { usePrivy } from "@/components/PrivyProviderWrapper";
+import { Wallet, LogOut, Download, BarChart2 } from "lucide-react";
+import Image from "next/image";
+import { AppleAppLink, GooglePlayAppLink } from "./MobileAppLinks";
 
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const { login, logout, authenticated, user, ready } = usePrivy();
 
-  const isTradingPage = pathname === '/trading';
+  const isTradingPage = pathname === "/trading";
 
   // Format wallet address for display
   const formatAddress = (address: string) => {
-    if (!address) return '';
+    if (!address) return "";
     return `${address.slice(0, 4)}...${address.slice(-4)}`;
   };
 
@@ -25,12 +26,12 @@ export default function Header() {
   // Redirection check after login completes
   React.useEffect(() => {
     if (ready && authenticated) {
-      if (typeof window !== 'undefined') {
-        const needsRedirect = sessionStorage.getItem('shouldRedirectToTrading');
-        if (needsRedirect === 'true') {
-          sessionStorage.removeItem('shouldRedirectToTrading');
-          if (pathname !== '/trading') {
-            router.push('/trading');
+      if (typeof window !== "undefined") {
+        const needsRedirect = sessionStorage.getItem("shouldRedirectToTrading");
+        if (needsRedirect === "true") {
+          sessionStorage.removeItem("shouldRedirectToTrading");
+          if (pathname !== "/trading") {
+            router.push("/trading");
           }
         }
       }
@@ -38,57 +39,47 @@ export default function Header() {
   }, [ready, authenticated, pathname, router]);
 
   return (
-    <header className="sticky top-0 z-40 w-full glass-panel border-b border-dark-border/80 px-4 md:px-8 py-3.5 flex items-center justify-between">
+    <header className="sticky top-0 z-40 w-full h-16 px-4 md:px-8 flex items-center justify-between">
       {/* Brand Logo */}
       <Link href="/" className="flex items-center gap-2 group">
-       <Image src='/logos/dark.png' alt='ChadWallet' width={40} height={40} className='rounded-full' />
-        <span className="font-extrabold text-lg tracking-wider text-gradient uppercase font-mono">
+        <Image
+          src="/logos/dark.png"
+          alt="ChadWallet"
+          width={45}
+          height={45}
+          className="rounded-full"
+        />
+        <span className="font-extrabold text-2xl tracking-wider text-gradient uppercase font-mono">
           ChadWallet
         </span>
       </Link>
 
       {/* Navigation & Auth */}
-      <div className="flex items-center gap-4">
-        {/* Trading Dashboard Shortcut */}
-        {!isTradingPage ? (
-          <Link
-            href="/trading"
-            onClick={(e) => {
-              if (ready && !authenticated) {
-                e.preventDefault();
-                login();
-              }
-            }}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand-green/30 text-xs font-semibold text-brand-green bg-brand-green/5 hover:bg-brand-green/10 hover:border-brand-green/50 transition-all duration-200"
-          >
-            <BarChart2 className="w-3.5 h-3.5" />
-            Trade Now
-          </Link>
-        ) : (
-          <Link
-            href="/"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dark-border text-xs font-semibold text-foreground/75 hover:text-foreground hover:bg-dark-card transition-all duration-200"
-          >
-            Home
-          </Link>
-        )}
-
-        {/* Mobile Download Link */}
-        <a
-          href="#download-apps"
-          className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-dark-card border border-dark-border text-xs font-medium text-foreground/80 hover:text-foreground hover:bg-dark-panel transition-all duration-200"
-        >
-          <Download className="w-3.5 h-3.5" />
-          Get App
-        </a>
+      <div className="flex w-1/2 h-full items-center justify-end gap-4">
+        {/* Mobile Download Links */}
+        <div className="flex w-72 h-full items-center justify-between">
+          <AppleAppLink />
+          <GooglePlayAppLink />
+        </div>
 
         {/* Privy Login/Profile Button */}
         {ready ? (
-          authenticated ? (
+          !authenticated ? (
+            <button
+              onClick={login}
+              className="inline-flex items-center gap-1.5 px-5 py-2 rounded-lg bg-[#0f0f0f] text-white text-base font-bold hover:shadow-lg hover:shadow-brand-green/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+            >
+              Login
+            </button>
+          ) : (
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-dark-panel border border-dark-border text-xs font-mono text-foreground/90">
                 <div className="w-2 h-2 rounded-full bg-brand-green animate-pulse"></div>
-                <span>{activeWallet ? formatAddress(activeWallet) : (user?.email?.address || 'Connected')}</span>
+                <span>
+                  {activeWallet
+                    ? formatAddress(activeWallet)
+                    : user?.email?.address || "Connected"}
+                </span>
               </div>
               <button
                 onClick={logout}
@@ -98,17 +89,9 @@ export default function Header() {
                 <LogOut className="w-4 h-4" />
               </button>
             </div>
-          ) : (
-            <button
-              onClick={login}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-brand-green to-brand-cyan text-white text-xs font-bold hover:shadow-lg hover:shadow-brand-green/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
-            >
-              <Wallet className="w-4 h-4" />
-              Connect Wallet
-            </button>
           )
         ) : (
-          <div className="w-28 h-9 rounded-lg bg-dark-card border border-dark-border animate-pulse"></div>
+          <div className="w-20 h-9 rounded-lg bg-dark-card border border-dark-border animate-pulse"></div>
         )}
       </div>
     </header>
