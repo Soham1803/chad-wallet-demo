@@ -27,6 +27,9 @@ interface CustomAuthModalProps {
   onClose: () => void;
   isMock: boolean;
   onMockLogin: (email: string) => void;
+  initOAuth?: (args: { provider: "google" | "apple" }) => void;
+  sendCode?: (args: { email: string }) => Promise<unknown>;
+  loginWithCode?: (args: { code: string }) => Promise<unknown>;
 }
 
 // Custom Auth Modal with custom Email OTP and Google flows
@@ -34,16 +37,15 @@ function CustomAuthModal({
   onClose,
   isMock,
   onMockLogin,
+  initOAuth,
+  sendCode,
+  loginWithCode,
 }: CustomAuthModalProps) {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"email" | "otp">("email");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  // Privy hooks (always declared to respect Rules of Hooks)
-  const { initOAuth } = useLoginWithOAuth();
-  const { sendCode, loginWithCode } = useLoginWithEmail();
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +58,7 @@ function CustomAuthModal({
         // Simulate code sending delay in mock mode
         await new Promise((resolve) => setTimeout(resolve, 800));
         setStep("otp");
-      } else {
+      } else if (sendCode) {
         await sendCode({ email });
         setStep("otp");
       }
@@ -83,7 +85,7 @@ function CustomAuthModal({
         // Simulate verification delay in mock mode
         await new Promise((resolve) => setTimeout(resolve, 800));
         onMockLogin(email);
-      } else {
+      } else if (loginWithCode) {
         await loginWithCode({ code });
         onClose();
       }
@@ -102,7 +104,7 @@ function CustomAuthModal({
   const handleGoogleLogin = () => {
     if (isMock) {
       onMockLogin("chad_trader@chadwallet.xyz");
-    } else {
+    } else if (initOAuth) {
       initOAuth({ provider: "google" });
       onClose();
     }
@@ -290,6 +292,10 @@ interface ConsumerProps {
 function RealPrivyConsumer({ children, isOpen, setOpen }: ConsumerProps) {
   const realPrivy = useRealPrivy();
 
+  // Call the hooks at the root of RealPrivyConsumer so they are always mounted!
+  const { initOAuth } = useLoginWithOAuth();
+  const { sendCode, loginWithCode } = useLoginWithEmail();
+
   const loginWithRedirect = React.useCallback(() => {
     if (typeof window !== "undefined") {
       sessionStorage.setItem("shouldRedirectToTrading", "true");
@@ -313,6 +319,9 @@ function RealPrivyConsumer({ children, isOpen, setOpen }: ConsumerProps) {
           onClose={() => setOpen(false)}
           isMock={false}
           onMockLogin={() => {}}
+          initOAuth={initOAuth}
+          sendCode={sendCode}
+          loginWithCode={loginWithCode}
         />
       )}
     </CustomPrivyContext.Provider>
