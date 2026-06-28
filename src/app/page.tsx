@@ -10,6 +10,8 @@ import RotatingBanner from "@/components/RotatingBanner";
 import Image from "next/image";
 import DummyTradingPanel from "@/components/DummyTradingPanel";
 import FeatureCard from "@/components/FeatureCard";
+import StartTradingBtn from "@/components/buttons/StartTrading";
+import DownloadAppBtn from "@/components/buttons/DownloadAppBtn";
 
 // Mock live-updating social theses to emulate the fomo.family social layer
 interface ThesisPost {
@@ -74,7 +76,6 @@ export default function Home() {
   const [theses, setTheses] = useState<ThesisPost[]>(INITIAL_THESES);
   const [tps, setTps] = useState(2450);
   const [activeUsers, setActiveUsers] = useState(12842);
-  const [showQrCode, setShowQrCode] = useState(false);
 
   // Live simulation of metrics and feed activity
   useEffect(() => {
@@ -193,45 +194,8 @@ export default function Home() {
         </p>
         {/* Call to Action Buttons */}
         <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-md">
-          <button
-            onClick={handleLaunchApp}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl backdrop-blur-md hover:backdrop-blur-none bg-[#68ffc063] hover:bg-[#079057] text-white font-bold text-md hover:shadow-xl  transition-all duration-300 cursor-pointer"
-          >
-            Start Trading
-            <ArrowRight className="w-4 h-4" />
-          </button>
-
-          <div className="relative flex flex-col items-center w-full sm:w-auto">
-            <button
-              onClick={() => setShowQrCode(!showQrCode)}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl backdrop-blur-md hover:backdrop-blur-sm bg-dark-panel/50 text-md font-semibold transition-all duration-200 cursor-pointer"
-            >
-              Download App
-            </button>
-
-            {/* QR Code Dropdown Card (visible on click) */}
-            <div
-              className={`absolute top-full left-1/2 -translate-x-1/2 mt-3 transition-all duration-300 z-50 w-64 p-5 rounded-2xl border backdrop-blur-md border-dark-border/80 bg-dark-panel/65  flex flex-col items-center gap-4 shadow-2xl shadow-black/50 ${
-                showQrCode
-                  ? "opacity-100 scale-100 pointer-events-auto"
-                  : "opacity-0 scale-95 pointer-events-none"
-              }`}
-            >
-              <div className="p-3 bg-white/5 rounded-xl border border-white/10 flex items-center justify-center w-55 h-55">
-                <Image
-                  height={300}
-                  width={300}
-                  src="/images/qr-code.png"
-                  alt="QR code download"
-                  unoptimized
-                />
-              </div>
-              <p className="text-xs text-foreground/50 text-center leading-relaxed">
-                Scan the QR code to download <br />
-                the app on your phone
-              </p>
-            </div>
-          </div>
+          <StartTradingBtn />
+          <DownloadAppBtn />
         </div>{" "}
         <span className="absolute left-1/2 -translate-x-1/2 bottom-20 text-xs text-brand-green font-bold">
           NOW AVAILABLE ON APP
@@ -355,45 +319,8 @@ export default function Home() {
             wallets that are actually printing.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-md">
-            <button
-              onClick={handleLaunchApp}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl backdrop-blur-md hover:backdrop-blur-none bg-[#68ffc063] hover:bg-[#079057] text-white font-bold text-md hover:shadow-xl  transition-all duration-300 cursor-pointer"
-            >
-              Start Trading
-              <ArrowRight className="w-4 h-4" />
-            </button>
-
-            <div className="relative flex flex-col items-center w-full sm:w-auto">
-              <button
-                onClick={() => setShowQrCode(!showQrCode)}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl backdrop-blur-md hover:backdrop-blur-sm bg-dark-panel/50 text-md font-semibold transition-all duration-200 cursor-pointer"
-              >
-                Download App
-              </button>
-
-              {/* QR Code Dropdown Card (visible on click) */}
-              <div
-                className={`absolute top-full left-1/2 -translate-x-1/2 mt-3 transition-all duration-300 z-50 w-64 p-5 rounded-2xl border backdrop-blur-md border-dark-border/80 bg-dark-panel/65  flex flex-col items-center gap-4 shadow-2xl shadow-black/50 ${
-                  showQrCode
-                    ? "opacity-100 scale-100 pointer-events-auto"
-                    : "opacity-0 scale-95 pointer-events-none"
-                }`}
-              >
-                <div className="p-3 bg-white/5 rounded-xl border border-white/10 flex items-center justify-center w-55 h-55">
-                  <Image
-                    height={300}
-                    width={300}
-                    src="/images/qr-code.png"
-                    alt="QR code download"
-                    unoptimized
-                  />
-                </div>
-                <p className="text-xs text-foreground/50 text-center leading-relaxed">
-                  Scan the QR code to download <br />
-                  the app on your phone
-                </p>
-              </div>
-            </div>
+            <StartTradingBtn />
+            <DownloadAppBtn />
           </div>
         </div>
       </section>
