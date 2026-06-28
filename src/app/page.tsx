@@ -3,20 +3,13 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { usePrivy } from "@/components/PrivyProviderWrapper";
-import {
-  ArrowRight,
-  Flame,
-  Zap,
-  Users,
-  QrCode,
-  MessageSquare,
-  Cpu,
-} from "lucide-react";
+import { ArrowRight, Flame, QrCode, MessageSquare } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import RotatingBanner from "@/components/RotatingBanner";
 import Image from "next/image";
 import DummyTradingPanel from "@/components/DummyTradingPanel";
+import FeatureCard from "@/components/FeatureCard";
 
 // Mock live-updating social theses to emulate the fomo.family social layer
 interface ThesisPost {
@@ -271,50 +264,59 @@ export default function Home() {
       </section>
 
       {/* Features Showcase Section */}
-      <section className="w-full py-20 px-4 md:px-8 max-w-7xl mx-auto">
-        <h2 className="text-3xl md:text-5xl font-extrabold text-center tracking-tight mb-12">
+      <section className="w-full py-20 px-4 md:px-24 mx-auto">
+        <h2 className="text-3xl md:text-5xl font-extrabold text-left tracking-tight mb-12">
           DeFi Simplified, <span className="text-gradient">Chad Style</span>
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Card 1 */}
-          <div className="p-6 rounded-2xl bg-dark-panel border border-dark-border/80 hover:border-brand-green/40 hover:-translate-y-1 transition-all duration-300 flex flex-col gap-4">
-            <div className="w-10 h-10 rounded-xl bg-brand-green/10 border border-brand-green/20 flex items-center justify-center text-brand-green shadow-inner">
-              <Zap className="w-5 h-5 fill-brand-green/15" />
-            </div>
-            <h3 className="text-lg font-bold">2-Second Onboarding</h3>
-            <p className="text-sm text-foreground/60 leading-relaxed">
-              Skip seed phrases, adapters, and browser extensions. Sign in
-              seamlessly with Apple or Google through Privy. A secure Solana
-              embedded wallet is automatically spun up for you instantly.
-            </p>
-          </div>
+          <FeatureCard
+            title="Trending Tokens"
+            description="Buy and Sell trending tokens"
+            imageAlt="Trending tokens"
+            imageSrc="/images/trending-tokens.png"
+          />
 
           {/* Card 2 */}
-          <div className="p-6 rounded-2xl bg-dark-panel border border-dark-border/80 hover:border-brand-cyan/40 hover:-translate-y-1 transition-all duration-300 flex flex-col gap-4">
-            <div className="w-10 h-10 rounded-xl bg-brand-cyan/10 border border-brand-cyan/20 flex items-center justify-center text-brand-cyan shadow-inner">
-              <Users className="w-5 h-5" />
-            </div>
-            <h3 className="text-lg font-bold">Social-First UX</h3>
-            <p className="text-sm text-foreground/60 leading-relaxed">
-              Don&apos;t trade alone. See trending tokens directly, follow live
-              trades, and read explanations (theses) from real holders
-              explaining why they are in a position before you click buy.
-            </p>
-          </div>
+          <FeatureCard
+            title="KOL traders"
+            description="Follow KOL traders."
+            imageAlt="Social-First UX"
+            imageSrc="/images/kol-traders.png"
+          />
 
           {/* Card 3 */}
-          <div className="p-6 rounded-2xl bg-dark-panel border border-dark-border/80 hover:border-brand-cyan/40 hover:-translate-y-1 transition-all duration-300 flex flex-col gap-4">
-            <div className="w-10 h-10 rounded-xl bg-brand-cyan/10 border border-brand-cyan/20 flex items-center justify-center text-brand-cyan shadow-inner">
-              <Cpu className="w-5 h-5" />
-            </div>
-            <h3 className="text-lg font-bold">Jupiter Swaps Integration</h3>
-            <p className="text-sm text-foreground/60 leading-relaxed">
-              Get the absolute best pricing and route splits on the market.
-              Powered directly by Jupiter API. Slippage auto-settings and
-              transaction routing ensure you never miss an entry.
-            </p>
-          </div>
+          <FeatureCard
+            title="Launch Meme coins"
+            description="Launch Meme coins from a tweet."
+            imageAlt="Launch Meme coin"
+            imageSrc="/images/launch-meme-coin.png"
+          />
+
+          {/* Card 4 */}
+          <FeatureCard
+            title="x trends"
+            description="Catch early trends on X"
+            imageAlt="X trends"
+            imageSrc="/images/x-trends.png"
+          />
+
+          {/* Card 5 */}
+          <FeatureCard
+            title="Manage assets"
+            description="Manage your assets with intuitive UI"
+            imageAlt="Manage assets"
+            imageSrc="/images/manage-assets.png"
+          />
+
+          {/* Card 6 */}
+          <FeatureCard
+            title="Relaunch memecoin"
+            description="Easliy relaunch memecoin."
+            imageAlt="Relaunch meme coin UI"
+            imageSrc="/images/relaunch-coin.png"
+          />
         </div>
       </section>
 
