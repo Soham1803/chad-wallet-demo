@@ -5,7 +5,7 @@ export default function useResponsive() {
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerHeight < 768);
+      setIsMobile(window.innerWidth < 768);
     };
 
     checkMobile();
