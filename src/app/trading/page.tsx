@@ -357,7 +357,8 @@ export default function TradingPage() {
             Desktop Only
           </h1>
           <p className="text-sm text-foreground/75 leading-relaxed mb-8">
-            The ChadWallet Trading Terminal is only available on Desktop. Please switch to a desktop browser or download our mobile app.
+            The ChadWallet Trading Terminal is only available on Desktop. Please
+            switch to a desktop browser or download our mobile app.
           </p>
 
           <div className="bg-dark-panel border border-dark-border/80 rounded-2xl p-5 w-full flex flex-col items-center gap-4">
@@ -423,14 +424,13 @@ export default function TradingPage() {
           <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
             <button
               onClick={login}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-x text-white font-bold text-xs hover:shadow-lg hover:shadow-brand-green/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+              className="inline-flex items-center justify-center border border-brand-green/35 rounded-xl  gap-2 px-6 py-3 rounded-x text-white font-bold text-lg hover:shadow-lg hover:shadow-brand-green/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
             >
-              <Wallet className="w-4 h-4" />
-              Connect Wallet
+              Login
             </button>
             <button
               onClick={() => router.push("/")}
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-dark-panel hover:bg-dark-card border border-dark-border hover:border-foreground/20 text-foreground/80 hover:text-foreground text-xs font-semibold transition-all duration-200 cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-dark-panel hover:bg-dark-card border border-dark-border hover:border-foreground/20 text-foreground/80 hover:text-foreground text-lg font-semibold transition-all duration-200 cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Home
