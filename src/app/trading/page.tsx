@@ -13,6 +13,8 @@ import Positions from "@/components/Positions";
 import { fetchRealTokenPrices } from "@/utils/solanaApi";
 import { usePrivy } from "@/components/PrivyProviderWrapper";
 import { Lock, Wallet, ArrowLeft } from "lucide-react";
+import useResponsive from "@/hooks/useResponsive";
+import { AppleAppLink, GooglePlayAppLink } from "@/components/MobileAppLinks";
 
 // Constants matching our pre-defined tokens list
 const TOKENS: TokenTicker[] = [
@@ -326,6 +328,7 @@ export default function TradingPage() {
   const { authenticated, ready, login } = usePrivy();
   const router = useRouter();
   const wasAuthenticatedRef = useRef(false);
+  const { isMobile } = useResponsive();
 
   useEffect(() => {
     if (ready) {
@@ -336,6 +339,48 @@ export default function TradingPage() {
       }
     }
   }, [ready, authenticated, router]);
+
+  // If mobile, show desktop-only warning
+  if (isMobile) {
+    return (
+      <div className="flex flex-col min-h-screen bg-dark-bg text-foreground">
+        <Header />
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto">
+          <div className="relative mb-8">
+            <div className="absolute inset-0 rounded-full bg-brand-cyan/20 blur-xl animate-pulse"></div>
+            <div className="w-20 h-20 rounded-2xl bg-dark-panel border border-brand-cyan/40 flex items-center justify-center text-brand-cyan shadow-lg shadow-brand-cyan/10 relative">
+              <span className="text-3xl">💻</span>
+            </div>
+          </div>
+
+          <h1 className="text-2xl font-extrabold tracking-wider uppercase font-mono text-gradient mb-4">
+            Desktop Only
+          </h1>
+          <p className="text-sm text-foreground/75 leading-relaxed mb-8">
+            The ChadWallet Trading Terminal is only available on Desktop. Please switch to a desktop browser or download our mobile app.
+          </p>
+
+          <div className="bg-dark-panel border border-dark-border/80 rounded-2xl p-5 w-full flex flex-col items-center gap-4">
+            <p className="text-xs text-foreground/50 font-semibold uppercase tracking-wider">
+              Get the Mobile App
+            </p>
+            <div className="flex flex-col gap-3 w-full">
+              <AppleAppLink />
+              <GooglePlayAppLink />
+            </div>
+          </div>
+
+          <button
+            onClick={() => router.push("/")}
+            className="mt-8 text-xs text-brand-green font-bold hover:underline flex items-center gap-2 cursor-pointer"
+          >
+            ← Back to Homepage
+          </button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   // If not ready, show the loader
   if (!ready) {

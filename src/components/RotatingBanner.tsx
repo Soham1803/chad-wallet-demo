@@ -118,6 +118,9 @@ export default function RotatingBanner({
   }, []);
 
   const handleTokenClick = (symbol: string) => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      return; // Do nothing on mobile
+    }
     router.push(`/trading?token=${symbol}`);
   };
 
@@ -137,7 +140,7 @@ export default function RotatingBanner({
             <div
               key={`${token.symbol}-${idx}`}
               onClick={() => handleTokenClick(token.symbol)}
-              className="inline-flex items-center gap-2 bg-dark-bg/60 hover:bg-dark-panel hover:scale-105 border border-dark-border/40 hover:border-brand-green/40 px-3 py-1.5 rounded-full cursor-pointer transition-all duration-200"
+              className="inline-flex items-center gap-2 bg-dark-bg/60 md:hover:bg-dark-panel md:hover:scale-105 border border-dark-border/40 md:hover:border-brand-green/40 px-3 py-1.5 rounded-full cursor-default md:cursor-pointer transition-all duration-200"
             >
               {/* Token Icon */}
               {token.logo ? (

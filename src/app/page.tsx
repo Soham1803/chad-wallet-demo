@@ -131,10 +131,12 @@ export default function Home() {
     };
   }, []);
 
-  // Redirection handler for authenticated users: automatically push to trading page
+  // Redirection handler for authenticated users: automatically push to trading page (desktop only)
   useEffect(() => {
     if (ready && authenticated) {
-      window.location.replace("/trading");
+      if (typeof window !== "undefined" && window.innerWidth >= 768) {
+        window.location.replace("/trading");
+      }
     }
   }, [ready, authenticated]);
 
@@ -157,13 +159,6 @@ export default function Home() {
         height={1000}
         className="absolute top-0 left-0 w-full h-full object-cover"
       />
-      <Image
-        src="/images/astronaut.webp"
-        alt="Astronaut"
-        width={500}
-        height={500}
-        className="absolute left-1/2 -translate-x-1/2 top-90 animate-float"
-      />
       {/* Global Navigation */}
       <Header />
 
@@ -171,7 +166,7 @@ export default function Home() {
       {/* <RotatingBanner reverse={false} /> */}
 
       {/* Main Hero Section */}
-      <section className="relative w-full h-screen pt-16 pb-24 px-4 md:px-8 max-w-7xl mx-auto flex flex-col items-center text-center">
+      <section className="relative w-full min-h-screen md:h-screen pt-16 pb-24 px-4 md:px-8 max-w-7xl mx-auto flex flex-col items-center text-center">
         {/* Glowing background blurs */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] md:w-[600px] h-[350px] md:h-[600px] rounded-full bg-brand-green/10 blur-[100px] pointer-events-none -z-10 animate-pulse-glow"></div>
         <div className="absolute top-1/3 left-1/3 w-[250px] md:w-[400px] h-[250px] md:h-[400px] rounded-full bg-brand-cyan/5 blur-[80px] pointer-events-none -z-10"></div>
@@ -189,25 +184,38 @@ export default function Home() {
           with one-click, share trading theses, and execute swaps instantly.
         </p>
         {/* Call to Action Buttons */}
-        <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-md">
-          <StartTradingBtn />
+        <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-md z-30">
+          <div className="hidden md:block w-full sm:w-auto">
+            <StartTradingBtn />
+          </div>
           <DownloadAppBtn />
         </div>{" "}
-        <span className="absolute left-1/2 -translate-x-1/2 bottom-30 text-xs text-brand-green font-bold">
-          NOW AVAILABLE ON APP
+        {/* Astronaut Image */}
+        <div className="relative md:absolute mt-12 md:mt-0 left-auto md:left-1/2 translate-x-0 md:-translate-x-1/2 top-0 md:top-[280px] lg:top-[260px] w-full max-w-[320px] sm:max-w-[380px] md:max-w-[500px] flex justify-center z-10">
+          <Image
+            src="/images/astronaut.webp"
+            alt="Astronaut"
+            width={500}
+            height={500}
+            className="animate-float w-full h-auto object-contain"
+            priority
+          />
+        </div>
+        <span className="relative md:absolute left-auto md:left-1/2 translate-x-0 md:-translate-x-1/2 bottom-0 md:bottom-90 lg:bottom-31 mt-12 md:mt-0 text-xs text-brand-green font-bold tracking-widest z-30 block">
+          NOW AVAILABLE ON MOBILE
         </span>
       </section>
 
       {/* Network Stats Counter */}
-      <section className="flex flex-col items-center gap-8 w-full bg-dark-card/60  py-10">
-        <div className="flex flex-col items-center gap-1">
-          <h2 className="text-5xl font-semibold font-roboto">
+      <section className="flex flex-col items-center gap-8 w-full bg-dark-card/60 py-10 px-4">
+        <div className="flex flex-col items-center gap-1 w-full text-center">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold font-roboto leading-snug">
             Every <span className="text-brand-blue">chain</span>
           </h2>
-          <h2 className="text-5xl font-semibold font-roboto">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold font-roboto leading-snug">
             Hunt every <span className="text-brand-cyan">memecoin</span>
           </h2>
-          <h2 className="text-5xl font-semibold font-roboto">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold font-roboto leading-snug">
             One <span className="text-brand-green">wallet</span>
           </h2>
         </div>
@@ -216,12 +224,12 @@ export default function Home() {
       </section>
 
       {/* Features Showcase Section */}
-      <section className="w-full py-40 px-4 md:px-24 mx-auto">
+      <section className="w-full py-16 md:py-40 px-4 md:px-24 mx-auto max-w-7xl">
         <h2 className="text-3xl md:text-5xl font-extrabold text-left tracking-tight mb-12">
           DeFi Simplified, <span className="text-gradient">Chad Style</span>
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {/* Card 1 */}
           <FeatureCard
             title="Trending Tokens"
@@ -273,7 +281,7 @@ export default function Home() {
       </section>
 
       {/* rotating banner (fomo.family feel) */}
-      <section className="relative flex flex-col items-center justify-center w-screen h-[120vh] py-52 px-4 md:px-8 mx-auto overflow-hidden">
+      <section className="relative flex flex-col items-center justify-center w-screen min-h-[80vh] md:h-[120vh] py-20 md:py-52 px-4 md:px-8 mx-auto overflow-hidden">
         <div className="absolute inset-0 w-full h-full pointer-events-none">
           <Image
             alt="BG"
@@ -306,16 +314,18 @@ export default function Home() {
             unoptimized
           />
         </div>
-        <div className="mb-40 z-20">
-          <h3 className=" text-teal-50 text-5xl text-center">
+        <div className="mb-20 md:mb-40 z-20">
+          <h3 className="text-teal-50 text-3xl sm:text-4xl md:text-5xl text-center">
             a trading app <br /> for the chads
           </h3>
-          <p className="text-gray-400 text-lg text-center font-semibold mt-6">
+          <p className="text-gray-400 text-sm sm:text-base md:text-lg text-center font-semibold mt-6">
             Snipe memecoins at lightning speed on every chain. <br /> Copy the
             wallets that are actually printing.
           </p>
-          <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-md">
-            <StartTradingBtn />
+          <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-md mx-auto">
+            <div className="hidden md:block w-full sm:w-auto">
+              <StartTradingBtn />
+            </div>
             <DownloadAppBtn />
           </div>
         </div>
