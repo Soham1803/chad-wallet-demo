@@ -11,11 +11,9 @@ import DummyTradingPanel from "@/components/DummyTradingPanel";
 import FeatureCard from "@/components/FeatureCard";
 import StartTradingBtn from "@/components/buttons/StartTrading";
 import DownloadAppBtn from "@/components/buttons/DownloadAppBtn";
-import useResponsive from "@/hooks/useResponsive";
 
 export default function Home() {
   const { authenticated, ready } = usePrivy();
-  const { isMobile } = useResponsive();
 
   // Redirection handler for authenticated users: automatically push to trading page (desktop only)
   useEffect(() => {
@@ -85,20 +83,18 @@ export default function Home() {
 
       {/* Network Stats Counter */}
       <section className="flex flex-col items-center gap-0 md:gap-8 w-full bg-dark-card/60 py-10 px-4">
-        {isMobile && (
-          <div className="relative h-[380px] w-full overflow-hidden flex justify-center">
-            <Image
-              alt="Mobile UI"
-              src="/images/mobile-back-lean.png"
-              width={1000}
-              height={500}
-              className="object-contain h-full"
-            />
-            {/* Smooth gradient overlay to fade bottom of phone into background */}
-            <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#030712] via-[#030712]/60 to-transparent pointer-events-none"></div>
-          </div>
-        )}
-        <div className={`flex flex-col items-center gap-1 w-full text-center ${isMobile ? "relative -mt-28 z-10" : ""}`}>
+        <div className="block md:hidden relative h-[380px] w-full overflow-hidden flex justify-center">
+          <Image
+            alt="Mobile UI"
+            src="/images/mobile-back-lean.png"
+            width={1000}
+            height={500}
+            className="object-contain h-full"
+          />
+          {/* Smooth gradient overlay to fade bottom of phone into background */}
+          <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#030712] via-[#030712]/60 to-transparent pointer-events-none"></div>
+        </div>
+        <div className="flex flex-col items-center gap-1 w-full text-center relative -mt-28 md:mt-0 z-10 md:z-0">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold font-roboto leading-snug">
             Every <span className="text-brand-blue">chain</span>
           </h2>
@@ -110,7 +106,9 @@ export default function Home() {
           </h2>
         </div>
         {/* Interactive App Mockup Preview */}
-        {!isMobile && <DummyTradingPanel />}
+        <div className="hidden md:flex justify-center w-full">
+          <DummyTradingPanel />
+        </div>
       </section>
 
       {/* Features Showcase Section */}

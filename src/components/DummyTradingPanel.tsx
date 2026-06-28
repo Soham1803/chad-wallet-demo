@@ -17,7 +17,7 @@ export default function DummyTradingPanel() {
     }
   };
   return (
-    <div className="mt-16 w-full max-w-6xl rounded-2xl glass-panel glow-green border border-dark-border/80 group">
+    <div className="mt-16 w-full max-w-6xl mx-auto rounded-2xl glass-panel glow-green border border-dark-border/80 group">
       <div className="flex items-center justify-between px-4 py-2 border-b border-dark-border/80 bg-dark-card/90">
         <div className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-brand-red/80"></span>
