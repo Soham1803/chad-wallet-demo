@@ -12,6 +12,7 @@ import DummyTradingPanel from "@/components/DummyTradingPanel";
 import FeatureCard from "@/components/FeatureCard";
 import StartTradingBtn from "@/components/buttons/StartTrading";
 import DownloadAppBtn from "@/components/buttons/DownloadAppBtn";
+import useResponsive from "@/hooks/useResponsive";
 
 // Mock live-updating social theses to emulate the fomo.family social layer
 interface ThesisPost {
@@ -76,6 +77,8 @@ export default function Home() {
   const [theses, setTheses] = useState<ThesisPost[]>(INITIAL_THESES);
   const [tps, setTps] = useState(2450);
   const [activeUsers, setActiveUsers] = useState(12842);
+
+  const { isMobile } = useResponsive();
 
   // Live simulation of metrics and feed activity
   useEffect(() => {
@@ -176,7 +179,7 @@ export default function Home() {
           The Social Trading Revolution
         </div>
         {/* Hero Title */}
-        <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight max-w-5xl leading-tight sm:leading-none">
+        <h1 className="text-6xl sm:text-6xl md:text-7xl font-extrabold tracking-tight max-w-5xl leading-tight sm:leading-none">
           ChadWallet
         </h1>
         <p className="mt-6 text-base sm:text-lg md:text-xl text-foreground/60 max-w-2xl font-light">
@@ -191,7 +194,7 @@ export default function Home() {
           <DownloadAppBtn />
         </div>{" "}
         {/* Astronaut Image */}
-        <div className="relative md:absolute mt-12 md:mt-0 left-auto md:left-1/2 translate-x-0 md:-translate-x-1/2 top-0 md:top-[280px] lg:top-[260px] w-full max-w-[320px] sm:max-w-[380px] md:max-w-[500px] flex justify-center z-10">
+        <div className="relative md:absolute -mt-16 md:mt-0 left-auto md:left-1/2 translate-x-0 md:-translate-x-1/2 top-0 md:top-[280px] lg:top-[260px] w-full max-w-[320px] sm:max-w-[380px] md:max-w-[500px] flex justify-center z-10">
           <Image
             src="/images/astronaut.webp"
             alt="Astronaut"
@@ -207,8 +210,21 @@ export default function Home() {
       </section>
 
       {/* Network Stats Counter */}
-      <section className="flex flex-col items-center gap-8 w-full bg-dark-card/60 py-10 px-4">
-        <div className="flex flex-col items-center gap-1 w-full text-center">
+      <section className="flex flex-col items-center gap-0 md:gap-8 w-full bg-dark-card/60 py-10 px-4">
+        {isMobile && (
+          <div className="relative h-[380px] w-full overflow-hidden flex justify-center">
+            <Image
+              alt="Mobile UI"
+              src="/images/mobile-back-lean.png"
+              width={1000}
+              height={500}
+              className="object-contain h-full"
+            />
+            {/* Smooth gradient overlay to fade bottom of phone into background */}
+            <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#030712] via-[#030712]/60 to-transparent pointer-events-none"></div>
+          </div>
+        )}
+        <div className={`flex flex-col items-center gap-1 w-full text-center ${isMobile ? "relative -mt-28 z-10" : ""}`}>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold font-roboto leading-snug">
             Every <span className="text-brand-blue">chain</span>
           </h2>
@@ -220,7 +236,7 @@ export default function Home() {
           </h2>
         </div>
         {/* Interactive App Mockup Preview */}
-        <DummyTradingPanel />
+        {!isMobile && <DummyTradingPanel />}
       </section>
 
       {/* Features Showcase Section */}
