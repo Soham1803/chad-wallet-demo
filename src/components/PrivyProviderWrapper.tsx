@@ -114,7 +114,7 @@ function CustomAuthModal({
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Modal Card */}
-      <div className="relative w-full max-w-[380px] p-8 rounded-3xl bg-dark-panel/40 border backdrop-blur-md border-brand-cyan/20 shadow-2xl shadow-brand-cyan/5 flex flex-col items-center z-10 animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-[380px] p-8 rounded-3xl bg-dark-panel/40 border backdrop-blur-md border-brand-green/20 shadow-[inset_0_0_24px_rgba(13,242,148,0.35),inset_0_0_2px_rgba(13,242,148,0.5),0_0_30px_rgba(13,242,148,0.15)] flex flex-col items-center z-10 animate-in zoom-in-95 duration-200">
         {/* Close Button */}
         <button
           onClick={onClose}

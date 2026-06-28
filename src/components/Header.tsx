@@ -25,18 +25,10 @@ export default function Header() {
 
   const activeWallet = user?.wallet?.address;
 
-  // Redirection check after login completes
+  // Redirection check: if user is authenticated and lands on homepage, push to trading
   React.useEffect(() => {
-    if (ready && authenticated) {
-      if (typeof window !== "undefined") {
-        const needsRedirect = sessionStorage.getItem("shouldRedirectToTrading");
-        if (needsRedirect === "true") {
-          sessionStorage.removeItem("shouldRedirectToTrading");
-          if (pathname !== "/trading") {
-            router.push("/trading");
-          }
-        }
-      }
+    if (ready && authenticated && pathname === "/") {
+      router.push("/trading");
     }
   }, [ready, authenticated, pathname, router]);
 

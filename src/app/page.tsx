@@ -131,14 +131,10 @@ export default function Home() {
     };
   }, []);
 
-  // Redirection handler after login completes
+  // Redirection handler for authenticated users: automatically push to trading page
   useEffect(() => {
     if (ready && authenticated) {
-      const needsRedirect = sessionStorage.getItem("shouldRedirectToTrading");
-      if (needsRedirect === "true") {
-        sessionStorage.removeItem("shouldRedirectToTrading");
-        router.push("/trading");
-      }
+      router.push("/trading");
     }
   }, [ready, authenticated, router]);
 
