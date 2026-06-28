@@ -19,7 +19,11 @@ export default function Home() {
   useEffect(() => {
     if (ready && authenticated) {
       if (typeof window !== "undefined" && window.innerWidth >= 768) {
-        window.location.replace("/trading");
+        const redirectUrl =
+          sessionStorage.getItem("shouldRedirectToTradingUrl") || "/trading";
+        sessionStorage.removeItem("shouldRedirectToTradingUrl");
+        sessionStorage.removeItem("shouldRedirectToTrading");
+        window.location.replace(redirectUrl);
       }
     }
   }, [ready, authenticated]);

@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { fetchRealTokenPrices } from "@/utils/solanaApi";
+import { usePrivy } from "@/components/PrivyProviderWrapper";
 
 export interface TokenTicker {
   symbol: string;
@@ -98,6 +99,7 @@ export default function RotatingBanner({
   reverse = false,
 }: RotatingBannerProps) {
   const router = useRouter();
+  const { login, authenticated, ready } = usePrivy();
   const [tokens, setTokens] = useState<TokenTicker[]>(DEFAULT_TOKENS);
 
   // Fetch real-time token prices and changes from DexScreener
@@ -121,7 +123,13 @@ export default function RotatingBanner({
     if (typeof window !== "undefined" && window.innerWidth < 768) {
       return; // Do nothing on mobile
     }
-    router.push(`/trading?token=${symbol}`);
+    if (ready && !authenticated) {
+      sessionStorage.setItem("shouldRedirectToTrading", "true");
+      sessionStorage.setItem("shouldRedirectToTradingUrl", `/trading?token=${symbol}`);
+      login();
+    } else {
+      router.push(`/trading?token=${symbol}`);
+    }
   };
 
   // Duplicate items to ensure smooth infinite loop scroll
