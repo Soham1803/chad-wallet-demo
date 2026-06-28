@@ -264,7 +264,7 @@ export default function Home() {
       </section>
 
       {/* Features Showcase Section */}
-      <section className="w-full py-20 px-4 md:px-24 mx-auto">
+      <section className="w-full py-40 px-4 md:px-24 mx-auto">
         <h2 className="text-3xl md:text-5xl font-extrabold text-left tracking-tight mb-12">
           DeFi Simplified, <span className="text-gradient">Chad Style</span>
         </h2>
@@ -320,166 +320,56 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Simulated Live Theses Feed (fomo.family feel) */}
-      <section className="w-full py-16 px-4 md:px-8 max-w-5xl mx-auto">
-        <div className="border border-dark-border/80 rounded-2xl bg-dark-panel/60 p-6 md:p-8 glass-panel relative">
-          <div className="absolute top-4 right-4 flex items-center gap-1 bg-brand-green/10 border border-brand-green/20 px-2 py-0.5 rounded text-[10px] text-brand-green font-mono font-bold">
-            <MessageSquare className="w-3 h-3" />
-            LIVE FEED
-          </div>
+      {/* rotating banner (fomo.family feel) */}
+      <section className="relative flex flex-col items-center justify-center w-full h-screen py-52 px-4 md:px-8 max-w-5xl mx-auto">
+        <div className=" text-teal-50 text-5xl">
+          a trading app <br /> for the chads
+        </div>
+        <p className="text-gray-400 text-lg text-center font-semibold mt-6">
+          Snipe memecoins at lightning speed on every chain. <br /> Copy the
+          wallets that are actually printing.
+        </p>
+        <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-md">
+          <button
+            onClick={handleLaunchApp}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl backdrop-blur-md hover:backdrop-blur-none bg-[#68ffc063] hover:bg-[#079057] text-white font-bold text-md hover:shadow-xl  transition-all duration-300 cursor-pointer"
+          >
+            Start Trading
+            <ArrowRight className="w-4 h-4" />
+          </button>
 
-          <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-2">
-            What Chads are Saying
-          </h2>
-          <p className="text-sm text-foreground/50 mb-6">
-            Real-time social theses submitted by holders on Solana chain
-          </p>
-
-          <div className="space-y-4">
-            {theses.map((thesis) => (
-              <div
-                key={thesis.id}
-                className="p-4 rounded-xl bg-dark-card border border-dark-border/50 hover:border-dark-border hover:scale-[1.01] transition-all duration-150 flex flex-col md:flex-row md:items-start gap-4"
-              >
-                {/* Avatar */}
-                <div className="w-10 h-10 shrink-0 rounded-full flex items-center justify-center font-bold text-white text-sm shadow-md">
-                  {thesis.avatar}
-                </div>
-
-                {/* Content */}
-                <div className="flex-1">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm text-foreground/90">
-                        {thesis.user}
-                      </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-dark-panel border border-dark-border">
-                        {thesis.token}
-                      </span>
-                      <span
-                        className={`text-[10px] px-2 py-0.5 rounded font-mono font-extrabold ${
-                          thesis.action === "BUY"
-                            ? "bg-brand-green/10 text-brand-green"
-                            : "bg-brand-red/10 text-brand-red"
-                        }`}
-                      >
-                        {thesis.action} {thesis.amount}
-                      </span>
-                    </div>
-                    <span className="text-xs text-foreground/30 font-mono">
-                      {thesis.time}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-xs text-foreground/75 leading-relaxed font-sans">
-                    {thesis.content}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-8 text-center">
-            <button
-              onClick={handleLaunchApp}
-              className="inline-flex items-center gap-2 text-xs font-bold text-brand-green hover:text-brand-cyan transition-colors duration-150"
-            >
-              Connect to write your thesis
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          <a
+            href="#download-apps"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl backdrop-blur-md hover:backdrop-blur-sm bg-dark-panel/50 text-md font-semibold transition-all duration-200"
+          >
+            Download App
+          </a>
+        </div>{" "}
+        <div className="absolute top-60 left-1/2 -translate-x-1/2 bg-transparent rounded-full w-1/2 animate-spin [animation-duration:20s] [animation-direction:reverse] aspect-square">
+          <Image
+            width={10000}
+            height={10000}
+            src="/images/inner-circle.png"
+            alt="Rotating cirle"
+            unoptimized
+          />
+        </div>
+        <div className="absolute bg-transparent rounded-full animate-spin [animation-duration:30s] aspect-square">
+          <Image
+            width={10000}
+            height={10000}
+            src="/images/rotating-outer.png"
+            alt="Rotating cirle"
+            unoptimized
+          />
         </div>
       </section>
 
       {/* App Downloads Section */}
       <section
         id="download-apps"
-        className="w-full py-20 px-4 md:px-8 max-w-7xl mx-auto border-t border-dark-border/40"
-      >
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-white text-xl shadow-lg shadow-brand-green/20">
-              C
-            </div>
-            <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight">
-              Get the ChadWallet <br />
-              <span className="text-gradient">Mobile App.</span>
-            </h2>
-            <p className="text-sm text-foreground/60 leading-relaxed max-w-md">
-              Available now on Android and iOS. Take the ultimate social Solana
-              wallet with you on-the-go. Secure keys, widgets, one-tap trading,
-              and push notifications for token breakouts.
-            </p>
-
-            {/* Download Badges */}
-            <div className="flex flex-wrap gap-4 pt-2">
-              {/* Apple Store */}
-              <a
-                href="https://apps.apple.com/us/app/chadwallet/id6757367474"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 bg-dark-panel hover:bg-dark-card border border-dark-border hover:border-brand-cyan/50 rounded-xl px-5 py-3 transition-all duration-200 group"
-              >
-                {/* SVG Apple Logo */}
-                <svg
-                  className="w-6 h-6 fill-foreground group-hover:fill-brand-cyan transition-colors"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.2.67-2.92 1.49-.62.72-1.16 1.86-1.01 2.98 1.12.09 2.25-.56 2.94-1.41z" />
-                </svg>
-                <div className="text-left">
-                  <div className="text-[10px] text-foreground/40 leading-none">
-                    Download on the
-                  </div>
-                  <div className="text-xs font-bold leading-tight mt-0.5">
-                    App Store
-                  </div>
-                </div>
-              </a>
-
-              {/* Google Play */}
-              <a
-                href="https://play.google.com/store/apps/details?id=xyz.chadwallet.www"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 bg-dark-panel hover:bg-dark-card border border-dark-border hover:border-brand-green/50 rounded-xl px-5 py-3 transition-all duration-200 group"
-              >
-                {/* SVG Google Play Logo */}
-                <svg
-                  className="w-6 h-6 fill-foreground group-hover:fill-brand-green transition-colors"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M5 3.25c-.28 0-.53.11-.72.28L12.56 12l8.28-8.47c-.19-.17-.44-.28-.72-.28H5zM3.53 4.28C3.36 4.47 3.25 4.72 3.25 5v14c0 .28.11.53.28.72L11.56 12 3.53 4.28zm9.72 8.44l8.28 8.47c.28 0 .53-.11.72-.28h-14.7c-.28 0-.53.11-.72.28l8.28-8.47c.07-.07.13-.07.2-.07s.13 0 .2.07zm8.47-8.44L13.56 12l8.16 7.72c.17-.19.28-.44.28-.72V5c0-.28-.11-.53-.28-.72z" />
-                </svg>
-                <div className="text-left">
-                  <div className="text-[10px] text-foreground/40 leading-none">
-                    Get it on
-                  </div>
-                  <div className="text-xs font-bold leading-tight mt-0.5">
-                    Google Play
-                  </div>
-                </div>
-              </a>
-            </div>
-          </div>
-
-          {/* QR Code Container */}
-          <div className="flex flex-col md:flex-row items-center justify-center gap-8 bg-dark-panel/40 border border-dark-border/60 rounded-3xl p-8 max-w-lg mx-auto w-full">
-            <div className="p-4 bg-white rounded-2xl shadow-inner flex items-center justify-center shrink-0">
-              <QrCode className="w-36 h-36 text-dark-bg" />
-            </div>
-            <div className="text-center md:text-left space-y-2">
-              <h3 className="text-lg font-bold">Scan to Download</h3>
-              <p className="text-xs text-foreground/60 leading-relaxed">
-                Scan the QR code with your phone camera to download the mobile
-                app and connect your accounts instantly.
-              </p>
-              <div className="inline-block mt-2 px-3 py-1 rounded bg-brand-green/10 text-brand-green border border-brand-green/20 text-[10px] font-mono">
-                Supports iOS 15+ & Android 9+
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+        className="w-full py-20 px-4 md:px-8 max-w-7xl mx-auto"
+      ></section>
 
       {/* Bottom Banner (Scrolling ticker, opposite direction) */}
       <RotatingBanner reverse={true} />

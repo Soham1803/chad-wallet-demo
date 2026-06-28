@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import { fetchRealTokenPrices } from '@/utils/solanaApi';
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { fetchRealTokenPrices } from "@/utils/solanaApi";
 
 export interface TokenTicker {
   symbol: string;
@@ -16,21 +16,87 @@ export interface TokenTicker {
 
 // Pre-defined Solana tokens with real-world decimals and addresses
 const DEFAULT_TOKENS: TokenTicker[] = [
-  { symbol: 'SOL', name: 'Solana', price: 142.45, change24h: 5.34, mint: 'So11111111111111111111111111111111111111112', decimals: 9, logo: 'https://coin-images.coingecko.com/coins/images/4128/large/solana.png' },
-  { symbol: 'CHAD', name: 'ChadWallet Token', price: 0.0425, change24h: 15.42, mint: 'CHADxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', decimals: 9, logo: '/logos/dark.png' },
-  { symbol: 'BONK', name: 'Bonk', price: 0.00002134, change24h: -2.15, mint: 'DezXAZ8z7PnrFcPykJzbO5JHcUqpHE8GDJEDgimOBBN', decimals: 5, logo: 'https://coin-images.coingecko.com/coins/images/28600/large/bonk.jpg' },
-  { symbol: 'WIF', name: 'dogwifhat', price: 2.12, change24h: 12.85, mint: 'EKpQGSJtjMFqKZ9KQGWjzD4WCo4PDaf8dZVWudqwm1W7', decimals: 6, logo: 'https://coin-images.coingecko.com/coins/images/33566/large/dogwifhat.jpg' },
-  { symbol: 'POPCAT', name: 'Popcat', price: 0.824, change24h: -4.32, mint: '7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr', decimals: 6, logo: 'https://coin-images.coingecko.com/coins/images/33760/large/image.jpg' },
-  { symbol: 'JUP', name: 'Jupiter', price: 0.785, change24h: 1.45, mint: 'JUPyiwrYd2CQCChjJUiKVtH7jEEJ22u2w7j6r2FmWZq', decimals: 6, logo: 'https://coin-images.coingecko.com/coins/images/34188/large/jup.png' },
-  { symbol: 'MEW', name: 'cat in a dogs world', price: 0.00412, change24h: 8.76, mint: 'MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5', decimals: 6, logo: 'https://coin-images.coingecko.com/coins/images/36440/large/MEW.png' },
-  { symbol: 'BOME', name: 'BOOK OF MEME', price: 0.00845, change24h: -0.84, mint: 'ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82', decimals: 6, logo: 'https://coin-images.coingecko.com/coins/images/36071/large/bome.png' },
+  {
+    symbol: "SOL",
+    name: "Solana",
+    price: 142.45,
+    change24h: 5.34,
+    mint: "So11111111111111111111111111111111111111112",
+    decimals: 9,
+    logo: "https://coin-images.coingecko.com/coins/images/4128/large/solana.png",
+  },
+  {
+    symbol: "CHAD",
+    name: "ChadWallet Token",
+    price: 0.0425,
+    change24h: 15.42,
+    mint: "CHADxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    decimals: 9,
+    logo: "/logos/dark.png",
+  },
+  {
+    symbol: "BONK",
+    name: "Bonk",
+    price: 0.00002134,
+    change24h: -2.15,
+    mint: "DezXAZ8z7PnrFcPykJzbO5JHcUqpHE8GDJEDgimOBBN",
+    decimals: 5,
+    logo: "https://coin-images.coingecko.com/coins/images/28600/large/bonk.jpg",
+  },
+  {
+    symbol: "WIF",
+    name: "dogwifhat",
+    price: 2.12,
+    change24h: 12.85,
+    mint: "EKpQGSJtjMFqKZ9KQGWjzD4WCo4PDaf8dZVWudqwm1W7",
+    decimals: 6,
+    logo: "https://coin-images.coingecko.com/coins/images/33566/large/dogwifhat.jpg",
+  },
+  {
+    symbol: "POPCAT",
+    name: "Popcat",
+    price: 0.824,
+    change24h: -4.32,
+    mint: "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr",
+    decimals: 6,
+    logo: "https://coin-images.coingecko.com/coins/images/33760/large/image.jpg",
+  },
+  {
+    symbol: "JUP",
+    name: "Jupiter",
+    price: 0.785,
+    change24h: 1.45,
+    mint: "JUPyiwrYd2CQCChjJUiKVtH7jEEJ22u2w7j6r2FmWZq",
+    decimals: 6,
+    logo: "https://coin-images.coingecko.com/coins/images/34188/large/jup.png",
+  },
+  {
+    symbol: "MEW",
+    name: "cat in a dogs world",
+    price: 0.00412,
+    change24h: 8.76,
+    mint: "MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5",
+    decimals: 6,
+    logo: "https://coin-images.coingecko.com/coins/images/36440/large/MEW.png",
+  },
+  {
+    symbol: "BOME",
+    name: "BOOK OF MEME",
+    price: 0.00845,
+    change24h: -0.84,
+    mint: "ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82",
+    decimals: 6,
+    logo: "https://coin-images.coingecko.com/coins/images/36071/large/bome.png",
+  },
 ];
 
 interface RotatingBannerProps {
   reverse?: boolean;
 }
 
-export default function RotatingBanner({ reverse = false }: RotatingBannerProps) {
+export default function RotatingBanner({
+  reverse = false,
+}: RotatingBannerProps) {
   const router = useRouter();
   const [tokens, setTokens] = useState<TokenTicker[]>(DEFAULT_TOKENS);
 
@@ -62,7 +128,7 @@ export default function RotatingBanner({ reverse = false }: RotatingBannerProps)
     <div className="w-full bg-dark-card border-y border-dark-border py-2 overflow-hidden flex select-none">
       <div
         className={`flex whitespace-nowrap min-w-full shrink-0 gap-6 items-center ${
-          reverse ? 'animate-marquee-reverse' : 'animate-marquee'
+          reverse ? "animate-marquee-reverse" : "animate-marquee"
         }`}
       >
         {marqueeItems.map((token, idx) => {
@@ -83,24 +149,33 @@ export default function RotatingBanner({ reverse = false }: RotatingBannerProps)
                   className="rounded-full object-cover shadow-sm select-none"
                 />
               ) : (
-                <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-brand-green to-brand-cyan flex items-center justify-center text-[10px] font-bold text-white uppercase shadow-sm">
+                <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white uppercase shadow-sm">
                   {token.symbol.substring(0, 2)}
                 </div>
               )}
-              
-              <span className="font-semibold text-xs text-foreground/90">{token.symbol}</span>
-              
+
+              <span className="font-semibold text-xs text-foreground/90">
+                {token.symbol}
+              </span>
+
               <span className="text-xs text-foreground/50 font-mono">
-                ${token.price.toLocaleString(undefined, { minimumFractionDigits: token.price < 0.01 ? 6 : 2 })}
+                $
+                {token.price.toLocaleString(undefined, {
+                  minimumFractionDigits: token.price < 0.01 ? 6 : 2,
+                })}
               </span>
 
               <span
                 className={`inline-flex items-center text-[10px] font-mono font-medium ${
-                  isPositive ? 'text-brand-green' : 'text-brand-red'
+                  isPositive ? "text-brand-green" : "text-brand-red"
                 }`}
               >
-                {isPositive ? <ArrowUpRight className="w-3 h-3 mr-0.5" /> : <ArrowDownRight className="w-3 h-3 mr-0.5" />}
-                {isPositive ? '+' : ''}
+                {isPositive ? (
+                  <ArrowUpRight className="w-3 h-3 mr-0.5" />
+                ) : (
+                  <ArrowDownRight className="w-3 h-3 mr-0.5" />
+                )}
+                {isPositive ? "+" : ""}
                 {token.change24h}%
               </span>
             </div>
