@@ -1,5 +1,17 @@
-export default function useResponsive() {
-    const isMobile = window.innerHeight < 768;
+import { useState, useEffect } from "react";
 
-    return { isMobile };
+export default function useResponsive() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerHeight < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  return { isMobile };
 }
