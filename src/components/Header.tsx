@@ -14,7 +14,7 @@ export default function Header() {
   const { login, logout, authenticated, user, ready } = usePrivy();
 
   const { isMobile } = useResponsive();
-  // const isTradingPage = pathname === "/trading";
+  const isTradingPage = pathname === "/trading";
 
   // Format wallet address for display
   const formatAddress = (address: string) => {
@@ -50,10 +50,12 @@ export default function Header() {
       {/* Navigation & Auth */}
       <div className="hidden md:flex w-1/2 h-full items-center justify-end gap-4">
         {/* Mobile Download Links */}
-        <div className="flex w-72 h-full items-center justify-between">
-          <AppleAppLink />
-          <GooglePlayAppLink />
-        </div>
+        {!isTradingPage && (
+          <div className="flex w-72 h-full items-center justify-between">
+            <AppleAppLink />
+            <GooglePlayAppLink />
+          </div>
+        )}
 
         {/* Privy Login/Profile Button */}
         {ready ? (
