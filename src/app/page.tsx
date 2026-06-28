@@ -157,7 +157,7 @@ export default function Home() {
         alt="Space Background"
         width={1000}
         height={1000}
-        className="absolute top-0 left-0 w-full h-full object-cover"
+        className="absolute top-0 left-0 w-full h-full object-cover pointer-events-none"
       />
       {/* Global Navigation */}
       <Header />
@@ -281,13 +281,13 @@ export default function Home() {
       </section>
 
       {/* rotating banner (fomo.family feel) */}
-      <section className="relative flex flex-col items-center justify-center w-screen min-h-[80vh] md:h-[120vh] py-20 md:py-52 px-4 md:px-8 mx-auto overflow-hidden">
+      <section className="relative flex flex-col items-center justify-center w-full min-h-[80vh] md:h-[120vh] py-20 md:py-52 px-4 md:px-8 mx-auto overflow-hidden">
         <div className="absolute inset-0 w-full h-full pointer-events-none">
           <Image
             alt="BG"
             src="/images/web3-bg.png"
             fill
-            className="object-cover opacity-10"
+            className="object-cover opacity-10 pointer-events-none"
             style={{
               maskImage:
                 "linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)",
@@ -296,7 +296,7 @@ export default function Home() {
             }}
           />
         </div>
-        <div className="absolute top-60 left-1/2 -translate-x-1/2 bg-transparent rounded-full w-1/4 animate-spin [animation-duration:20s] [animation-direction:reverse] aspect-square">
+        <div className="absolute top-60 left-1/2 -translate-x-1/2 bg-transparent rounded-full w-1/4 animate-spin [animation-duration:20s] [animation-direction:reverse] aspect-square pointer-events-none">
           <Image
             width={10000}
             height={10000}
@@ -305,7 +305,7 @@ export default function Home() {
             unoptimized
           />
         </div>
-        <div className="absolute w-1/2 bg-transparent rounded-full animate-spin [animation-duration:30s] aspect-square">
+        <div className="absolute w-1/2 bg-transparent rounded-full animate-spin [animation-duration:30s] aspect-square pointer-events-none">
           <Image
             width={10000}
             height={10000}

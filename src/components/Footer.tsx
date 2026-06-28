@@ -2,13 +2,13 @@ import React from "react";
 
 export default function Footer() {
   return (
-    <footer className="w-full h-50 bg-dark-card border-t border-dark-border/80 px-4 md:px-8 py-12 mt-auto flex flex-col sm:flex-row justify-between gap-4">
-      <div className="flex  flex-col justify-center sm:justify-start gap-3">
+    <footer className="w-full bg-dark-card border-t border-dark-border/80 px-6 md:px-8 py-12 mt-auto flex flex-col md:flex-row justify-between gap-8 md:gap-4">
+      <div className="flex flex-col justify-center md:justify-start gap-3">
         <div className="flex flex-col items-start gap-2">
-          <span className="font-bold text-4xl tracking-wide uppercase font-mono">
+          <span className="font-bold text-3xl md:text-4xl tracking-wide uppercase font-mono">
             ChadWallet
           </span>
-          <span className="font-semibold text-xl tracking-wide text-gray-400 font-mono">
+          <span className="font-semibold text-lg md:text-xl tracking-wide text-gray-400 font-mono">
             Where the Chads trade.
           </span>
         </div>
@@ -18,9 +18,9 @@ export default function Footer() {
         </p>
       </div>
 
-      <div className="flex items-end justify-end h-full gap-6 text-xs text-foreground/60">
-        <div className="flex flex-col gap-2">
-          <span className="text-gray-400 text-sm uppercase">SOCIAL</span>
+      <div className="flex flex-wrap md:flex-nowrap items-start md:items-end justify-start md:justify-end gap-8 md:gap-6 text-xs text-foreground/60">
+        <div className="flex flex-col gap-2 min-w-[100px]">
+          <span className="text-gray-400 text-sm uppercase font-semibold">SOCIAL</span>
           <a
             href="https://x.com/getchadwallet"
             className="hover:text-foreground transition-colors duration-150"
@@ -34,8 +34,8 @@ export default function Footer() {
             LinkedIn
           </a>
         </div>
-        <div className="flex flex-col gap-2">
-          <span className="text-gray-400 text-sm uppercase">GET APP</span>
+        <div className="flex flex-col gap-2 min-w-[150px]">
+          <span className="text-gray-400 text-sm uppercase font-semibold">GET APP</span>
           <a
             href="https://apps.apple.com/us/app/chadwallet/id6757367474"
             target="_blank"
