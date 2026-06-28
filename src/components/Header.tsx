@@ -28,9 +28,9 @@ export default function Header() {
   // Redirection check: if user is authenticated and lands on homepage, push to trading
   React.useEffect(() => {
     if (ready && authenticated && pathname === "/") {
-      router.push("/trading");
+      window.location.replace("/trading");
     }
-  }, [ready, authenticated, pathname, router]);
+  }, [ready, authenticated, pathname]);
 
   return (
     <header className="sticky top-0 z-40 w-full h-16 px-4 md:px-8 flex items-center justify-between">

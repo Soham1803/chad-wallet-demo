@@ -134,9 +134,9 @@ export default function Home() {
   // Redirection handler for authenticated users: automatically push to trading page
   useEffect(() => {
     if (ready && authenticated) {
-      router.push("/trading");
+      window.location.replace("/trading");
     }
-  }, [ready, authenticated, router]);
+  }, [ready, authenticated]);
 
   const handleLaunchApp = () => {
     if (ready && !authenticated) {
@@ -162,7 +162,7 @@ export default function Home() {
         alt="Astronaut"
         width={500}
         height={500}
-        className="absolute left-1/2 -translate-x-1/2 top-75 animate-float"
+        className="absolute left-1/2 -translate-x-1/2 top-90 animate-float"
       />
       {/* Global Navigation */}
       <Header />
@@ -193,7 +193,7 @@ export default function Home() {
           <StartTradingBtn />
           <DownloadAppBtn />
         </div>{" "}
-        <span className="absolute left-1/2 -translate-x-1/2 bottom-20 text-xs text-brand-green font-bold">
+        <span className="absolute left-1/2 -translate-x-1/2 bottom-30 text-xs text-brand-green font-bold">
           NOW AVAILABLE ON APP
         </span>
       </section>
