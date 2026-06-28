@@ -57,7 +57,7 @@ export default function Header() {
       </Link>
 
       {/* Navigation & Auth */}
-      {isMobile && (
+      {!isMobile && (
         <div className="flex w-1/2 h-full items-center justify-end gap-4">
           {/* Mobile Download Links */}
           <div className="flex w-72 h-full items-center justify-between">
