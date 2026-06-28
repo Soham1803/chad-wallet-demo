@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { usePrivy } from "@/components/PrivyProviderWrapper";
-import { Wallet, LogOut, Download, BarChart2 } from "lucide-react";
+import { LogOut } from "lucide-react";
 import Image from "next/image";
 import { AppleAppLink, GooglePlayAppLink } from "./MobileAppLinks";
 
@@ -13,7 +13,7 @@ export default function Header() {
   const router = useRouter();
   const { login, logout, authenticated, user, ready } = usePrivy();
 
-  const isTradingPage = pathname === "/trading";
+  // const isTradingPage = pathname === "/trading";
 
   // Format wallet address for display
   const formatAddress = (address: string) => {
@@ -49,7 +49,7 @@ export default function Header() {
           height={45}
           className="rounded-full"
         />
-        <span className="font-extrabold text-2xl tracking-wider text-gradient uppercase font-mono">
+        <span className="font-extrabold text-3xl tracking-wider text-brand">
           ChadWallet
         </span>
       </Link>
