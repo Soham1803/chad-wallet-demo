@@ -1,240 +1,232 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { TokenTicker } from "./RotatingBanner";
-import { Users, History } from "lucide-react";
-import { fetchOnChainSignatures } from "@/utils/solanaApi";
+import React, { useState } from "react";
+import { TokenDetails } from "@/utils/solanaApi";
+import { Heart } from "lucide-react";
+import mockTradersJson from "@/data/mockTraders.json";
 
 interface ActivityFeedProps {
-  token: TokenTicker;
+  token: TokenDetails;
   solPrice?: number;
 }
 
-interface TradeItem {
-  id: string;
-  wallet: string;
-  action: "BUY" | "SELL";
-  amountToken: number;
-  amountSol: number;
-  time: string;
+interface TraderRow {
+  username: string;
+  avatarColor: string;
+  holdTime: string;
+  amount: number;
+  entryPriceMult: number; // multiplier to base price to calculate entry
+  thesisText?: string;
+  likes: number;
 }
 
-interface HolderItem {
-  rank: number;
-  wallet: string;
-  balance: number;
-  percentage: number;
-  isPool?: boolean;
-}
+export default function ActivityFeed({ token }: ActivityFeedProps) {
+  const [activeTab, setActiveTab] = useState<"holders" | "swaps" | "thesis">("holders");
+  const [thesisOnly, setThesisOnly] = useState(false);
+  const [friendsOnly, setFriendsOnly] = useState(false);
 
-export default function ActivityFeed({
-  token,
-  solPrice = 142.45,
-}: ActivityFeedProps) {
-  const [activeTab, setActiveTab] = useState<"trades" | "holders">("trades");
-  const [trades, setTrades] = useState<TradeItem[]>([]);
-
-  // Generate mock top holders inline based on the token
-  const isPoolToken = token.symbol !== "SOL";
-  const holders: HolderItem[] = [
-    {
-      rank: 1,
-      wallet: isPoolToken
-        ? "Raydium Authority Pool (5Yc...t4)"
-        : "Binance Wallet Hot (2Rz...8p)",
-      balance: token.symbol === "SOL" ? 8421045 : 124500000 * (1 / token.price),
-      percentage: token.symbol === "SOL" ? 12.4 : 18.5,
-      isPool: true,
-    },
-    {
-      rank: 2,
-      wallet: "ChadWallet Vault (CHAD...v7)",
-      balance: token.symbol === "SOL" ? 3120400 : 42000000 * (1 / token.price),
-      percentage: token.symbol === "SOL" ? 4.6 : 6.2,
-      isPool: true,
-    },
-    {
-      rank: 3,
-      wallet: "whale_daddy.sol (8Gx...2w)",
-      balance: token.symbol === "SOL" ? 1420500 : 15000000 * (1 / token.price),
-      percentage: token.symbol === "SOL" ? 2.1 : 2.2,
-    },
-    {
-      rank: 4,
-      wallet: "jup_arbitrage.sol (Jup...7x)",
-      balance: token.symbol === "SOL" ? 950200 : 8500000 * (1 / token.price),
-      percentage: token.symbol === "SOL" ? 1.4 : 1.3,
-    },
-    {
-      rank: 5,
-      wallet: "sol_enjoyer.sol (C6v...w9)",
-      balance: token.symbol === "SOL" ? 520100 : 5000000 * (1 / token.price),
-      percentage: token.symbol === "SOL" ? 0.76 : 0.74,
-    },
-  ];
-
-  // Fetch real on-chain transaction logs for the active token from Solana network
-  useEffect(() => {
-    let active = true;
-
-    const loadRealTrades = async () => {
-      if (activeTab !== "trades") return;
-
-      const signatures = await fetchOnChainSignatures(token.mint, 8);
-      if (!active) return;
-
-      if (signatures.length === 0) {
-        // Fallback mock trades if RPC fails or for custom CHAD token
-        const mockTrades: TradeItem[] = Array.from({ length: 6 }).map(
-          (_, idx) => {
-            const isBuy = Math.random() > 0.45;
-            const amountSol = Number((Math.random() * 8 + 0.1).toFixed(2));
-            const amountToken = Number(
-              (amountSol * (solPrice / token.price)).toFixed(
-                token.price > 1 ? 2 : 0,
-              ),
-            );
-            return {
-              id: `trade-${idx}-${Date.now()}`,
-              wallet: `${Math.random().toString(36).substring(2, 6)}...${Math.random().toString(36).substring(2, 6)}`,
-              action: isBuy ? "BUY" : "SELL",
-              amountSol,
-              amountToken,
-              time: `${idx * 2 + 1}m ago`,
-            };
-          },
+  // Custom zero subscript price formatter
+  const formatSubscriptPrice = (price: number) => {
+    if (price === 0) return "$0.00";
+    if (price < 0.01) {
+      const str = price.toFixed(10);
+      const match = str.match(/\.0+/);
+      const leadingZerosCount = match ? match[0].length - 1 : 0;
+      if (leadingZerosCount >= 4) {
+        const remaining = price * Math.pow(10, leadingZerosCount + 1);
+        return (
+          <span className="font-mono text-gray-200">
+            $0.0<sub className="text-[10px] bottom-0 font-bold align-sub text-gray-400 mx-[1px]">{leadingZerosCount}</sub>{remaining.toFixed(0)}
+          </span>
         );
-        setTrades(mockTrades);
-        return;
       }
+    }
+    return (
+      <span className="font-mono text-gray-200">
+        ${price.toLocaleString(undefined, {
+          minimumFractionDigits: price < 0.01 ? 6 : 2,
+          maximumFractionDigits: price < 0.01 ? 6 : 3,
+        })}
+      </span>
+    );
+  };
 
-      // Map real on-chain transaction data
-      const mappedTrades: TradeItem[] = signatures.map((tx) => ({
-        id: tx.signature,
-        wallet: tx.signature.slice(0, 4) + "..." + tx.signature.slice(-4),
-        action: tx.isBuy ? "BUY" : "SELL",
-        amountSol: tx.amountSol,
-        amountToken: Number(
-          (tx.amountSol * (solPrice / token.price)).toFixed(
-            token.price > 1 ? 2 : 0,
-          ),
-        ),
-        time: tx.timeAgo,
-      }));
+  // Helper to format large amounts
+  const formatAmount = (num: number) => {
+    if (num >= 1e9) return `${(num / 1e9).toFixed(1)}B`;
+    if (num >= 1e6) return `${(num / 1e6).toFixed(1)}M`;
+    if (num >= 1e3) return `${(num / 1e3).toFixed(1)}K`;
+    return num.toLocaleString(undefined, { maximumFractionDigits: 0 });
+  };
 
-      setTrades(mappedTrades);
+  const traders: TraderRow[] = mockTradersJson;
+
+  // Dynamically calculate holdings based on token price
+  const resolvedRows = traders.map((trader) => {
+    const entryPrice = token.price * trader.entryPriceMult;
+    const currentPrice = token.price;
+    const positionValue = trader.amount * currentPrice;
+    const entryValue = trader.amount * entryPrice;
+    const pnlUsd = positionValue - entryValue;
+    const pnlPct = ((currentPrice - entryPrice) / entryPrice) * 100;
+
+    return {
+      ...trader,
+      entryPrice,
+      positionValue,
+      pnlUsd,
+      pnlPct,
     };
+  });
 
-    loadRealTrades();
-    const interval = setInterval(loadRealTrades, 8000); // Polling every 8s
-
-    return () => {
-      active = false;
-      clearInterval(interval);
-    };
-  }, [token, activeTab, solPrice]);
+  // Filter rows based on tabs/checkboxes
+  const filteredRows = resolvedRows.filter((row) => {
+    if (activeTab === "thesis" || thesisOnly) {
+      return !!row.thesisText;
+    }
+    return true;
+  });
 
   return (
-    <div className="flex flex-col bg-transparent overflow-hidden h-full">
-      {/* Tabs */}
-      <div className="flex border-b border-dark-border/60 text-xs font-semibold bg-dark-card/20">
-        <button
-          onClick={() => setActiveTab("trades")}
-          className={`flex-1 py-3 flex items-center justify-center gap-1.5 border-b-2 transition-all ${
-            activeTab === "trades"
-              ? "border-brand-green text-brand-green bg-brand-green/5"
-              : "border-transparent text-foreground/60 hover:text-foreground"
-          }`}
-        >
-          <History className="w-3.5 h-3.5" />
-          Live Trades
-        </button>
-        <button
-          onClick={() => setActiveTab("holders")}
-          className={`flex-1 py-3 flex items-center justify-center gap-1.5 border-b-2 transition-all ${
-            activeTab === "holders"
-              ? "border-brand-green text-brand-green bg-brand-green/5"
-              : "border-transparent text-foreground/60 hover:text-foreground"
-          }`}
-        >
-          <Users className="w-3.5 h-3.5" />
-          Top Holders
-        </button>
+    <div className="flex flex-col bg-[#06070a] border-t border-[#161b26]/85 overflow-hidden h-full font-mono text-xs select-none">
+      {/* 1. Header Tab selectors */}
+      <div className="flex items-center justify-between border-b border-[#161b26]/80 px-3 bg-[#0d0e12]/20 h-10 text-[11px] font-bold text-gray-500">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setActiveTab("holders")}
+            className={`py-3 cursor-pointer ${
+              activeTab === "holders" ? "text-white border-b border-white" : "hover:text-gray-300"
+            }`}
+          >
+            Holders
+          </button>
+          <button
+            onClick={() => setActiveTab("swaps")}
+            className={`py-3 cursor-pointer ${
+              activeTab === "swaps" ? "text-white border-b border-white" : "hover:text-gray-300"
+            }`}
+          >
+            Swaps
+          </button>
+          <button
+            onClick={() => setActiveTab("thesis")}
+            className={`py-3 cursor-pointer ${
+              activeTab === "thesis" ? "text-white border-b border-white" : "hover:text-gray-300"
+            }`}
+          >
+            Thesis (2)
+          </button>
+        </div>
+
+        {/* Right Filter checkboxes */}
+        <div className="flex items-center gap-4">
+          <label className="flex items-center gap-1.5 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={thesisOnly}
+              onChange={(e) => setThesisOnly(e.target.checked)}
+              className="w-3.5 h-3.5 rounded bg-transparent border-gray-700 checked:bg-[#0df294]"
+            />
+            Thesis only
+          </label>
+          <label className="flex items-center gap-1.5 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={friendsOnly}
+              onChange={(e) => setFriendsOnly(e.target.checked)}
+              className="w-3.5 h-3.5 rounded bg-transparent border-gray-700 checked:bg-[#0df294]"
+            />
+            Friends only
+          </label>
+        </div>
       </div>
 
-      {/* Content pane */}
-      <div className="flex-1 overflow-y-auto min-h-[220px]">
-        {activeTab === "trades" ? (
-          <div className="divide-y divide-dark-border/30">
-            {trades.map((trade) => {
-              const isBuy = trade.action === "BUY";
-              return (
-                <div
-                  key={trade.id}
-                  className="flex items-center justify-between p-3 text-xs hover:bg-dark-card/20 transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-foreground/45 font-mono">
-                      {trade.wallet}
-                    </span>
-                    <span
-                      className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold leading-none ${
-                        isBuy
-                          ? "bg-brand-green/10 text-brand-green"
-                          : "bg-brand-red/10 text-brand-red"
-                      }`}
-                    >
-                      {trade.action}
-                    </span>
-                  </div>
+      {/* 2. Table Column Headers */}
+      <div className="grid grid-cols-12 px-4 py-2 border-b border-[#161b26]/50 bg-[#0d0e12]/10 text-[10px] font-bold text-gray-600">
+        <div className="col-span-3">Trader</div>
+        <div className="col-span-2 text-right">Position</div>
+        <div className="col-span-2 text-right">PnL</div>
+        <div className="col-span-2 text-right">Avg. entry</div>
+        <div className="col-span-3 pl-6">Thesis</div>
+      </div>
 
-                  <div className="flex items-center gap-4">
-                    <span className="font-semibold text-foreground/90 font-mono">
-                      {trade.amountToken.toLocaleString(undefined, {
-                        maximumFractionDigits: token.price > 1 ? 2 : 0,
-                      })}{" "}
-                      {token.symbol}
-                    </span>
-                    <span className="text-foreground/50 font-mono hidden sm:inline">
-                      {trade.amountSol} SOL
-                    </span>
-                    <span className="text-[10px] text-foreground/30 font-mono w-12 text-right">
-                      {trade.time}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="divide-y divide-dark-border/30">
-            {holders.map((holder) => (
+      {/* 3. Table Rows */}
+      <div className="flex-1 overflow-y-auto divide-y divide-[#161b26]/20 bg-[#06070a]">
+        {filteredRows.length > 0 ? (
+          filteredRows.map((row, idx) => {
+            const isPositive = row.pnlPct >= 0;
+
+            return (
               <div
-                key={holder.rank}
-                className="flex items-center justify-between p-3 text-xs hover:bg-dark-card/20 transition-colors"
+                key={`${row.username}-${idx}`}
+                className="grid grid-cols-12 px-4 py-2 text-[11px] items-center hover:bg-[#0d0e12]/40 transition-colors"
               >
-                <div className="flex items-center gap-3">
-                  <span className="font-mono text-[10px] bg-dark-bg border border-dark-border text-foreground/40 w-5 h-5 rounded-full flex items-center justify-center font-bold">
-                    {holder.rank}
-                  </span>
-                  <span
-                    className={`font-mono ${holder.isPool ? "text-brand-green font-medium" : "text-foreground/80"}`}
-                  >
-                    {holder.wallet}
-                  </span>
+                {/* Trader column */}
+                <div className="col-span-3 flex items-center gap-2">
+                  <div className={`w-6 h-6 rounded-full ${row.avatarColor} flex items-center justify-center text-[9px] font-black text-white shrink-0`}>
+                    {row.username.substring(0, 2).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <span className="font-bold text-gray-200 block truncate">{row.username}</span>
+                    <span className="text-[9px] text-gray-600 block leading-none mt-0.5 whitespace-nowrap">
+                      {row.holdTime}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="text-right font-mono flex items-center gap-4">
-                  <span className="text-foreground/60 hidden sm:inline">
-                    {Math.floor(holder.balance).toLocaleString()} {token.symbol}
+                {/* Position column */}
+                <div className="col-span-2 text-right">
+                  <div className="font-bold text-gray-300">
+                    ${row.positionValue.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </div>
+                  <div className="text-[9px] text-gray-500">
+                    {formatAmount(row.amount)} {token.symbol}
+                  </div>
+                </div>
+
+                {/* PnL column */}
+                <div className="col-span-2 text-right">
+                  <div className={`font-bold ${isPositive ? "text-emerald-500" : "text-rose-500"}`}>
+                    {isPositive ? "+" : ""}${row.pnlUsd.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </div>
+                  <div className={`text-[9px] font-bold ${isPositive ? "text-emerald-500" : "text-rose-500"}`}>
+                    {isPositive ? "▲" : "▼"} {Math.abs(row.pnlPct).toFixed(2)}%
+                  </div>
+                </div>
+
+                {/* Avg Entry column */}
+                <div className="col-span-2 text-right">
+                  <div className="font-bold text-gray-300">
+                    $1M MC
+                  </div>
+                  <div className="text-[9px] text-gray-500 block leading-none mt-0.5">
+                    {formatSubscriptPrice(row.entryPrice)}
+                  </div>
+                </div>
+
+                {/* Thesis column */}
+                <div className="col-span-3 pl-6 flex items-center justify-between text-gray-400">
+                  <span className="truncate max-w-[80%] italic">
+                    {row.thesisText || "--"}
                   </span>
-                  <span className="font-bold text-foreground/90 w-12 text-right">
-                    {holder.percentage}%
-                  </span>
+                  {row.thesisText && (
+                    <div className="flex items-center gap-1 text-[9px] text-gray-600 hover:text-rose-500 cursor-pointer shrink-0">
+                      <Heart className="w-3 h-3" />
+                      <span>{row.likes}</span>
+                    </div>
+                  )}
                 </div>
               </div>
-            ))}
-          </div>
+            );
+          })
+        ) : (
+          <div className="p-8 text-center text-xs text-gray-600">No active positions under this filter.</div>
         )}
       </div>
     </div>

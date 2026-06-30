@@ -1,0 +1,60 @@
+[
+  {
+    "username": "skyneet",
+    "avatarColor": "bg-orange-500",
+    "holdTime": "16h 13m avg. hold",
+    "amount": 1000000,
+    "entryPriceMult": 0.98,
+    "likes": 0
+  },
+  {
+    "username": "jappLums",
+    "avatarColor": "bg-indigo-600",
+    "holdTime": "2h 6m avg. hold",
+    "amount": 403000,
+    "entryPriceMult": 0.982,
+    "likes": 0
+  },
+  {
+    "username": "BenNQ",
+    "avatarColor": "bg-emerald-600",
+    "holdTime": "4h 30m avg. hold",
+    "amount": 139800,
+    "entryPriceMult": 0.985,
+    "thesisText": "return to memes",
+    "likes": 0
+  },
+  {
+    "username": "KirbyW86075",
+    "avatarColor": "bg-pink-600",
+    "holdTime": "9d 9h avg. hold",
+    "amount": 19000,
+    "entryPriceMult": 0.988,
+    "likes": 0
+  },
+  {
+    "username": "AZElolguy",
+    "avatarColor": "bg-red-500",
+    "holdTime": "4h 30m avg. hold",
+    "amount": 18000,
+    "entryPriceMult": 0.95,
+    "likes": 0
+  },
+  {
+    "username": "Blockchainz",
+    "avatarColor": "bg-blue-600",
+    "holdTime": "1d 21h avg. hold",
+    "amount": 558400,
+    "entryPriceMult": 0.991,
+    "likes": 0
+  },
+  {
+    "username": "ExactHardGuan",
+    "avatarColor": "bg-yellow-600",
+    "holdTime": "2h 37m avg. hold",
+    "amount": 456900,
+    "entryPriceMult": 0.983,
+    "thesisText": "dave portnoy sucks at crypto. send it",
+    "likes": 1
+  }
+]

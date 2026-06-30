@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
+import { TokenDetails } from "@/utils/solanaApi";
+import { ChevronDown, Share2, X, Sparkles } from "lucide-react";
 import Image from "next/image";
-import { TokenTicker } from "./RotatingBanner";
-import { Share2, Sparkles, X, TrendingUp } from "lucide-react";
 
 interface PositionItem {
-  token: TokenTicker;
+  token: TokenDetails;
   balance: number;
   entryPrice: number;
   currentPrice: number;
@@ -14,251 +14,301 @@ interface PositionItem {
 
 interface PositionsProps {
   positions: PositionItem[];
-  onClosePosition: (token: TokenTicker) => void;
+  onClosePosition: (token: TokenDetails) => void;
   solPrice?: number;
+  selectedToken: TokenDetails;
 }
 
 export default function Positions({
   positions,
   onClosePosition,
   solPrice = 142.45,
+  selectedToken,
 }: PositionsProps) {
+  const [activeFilter, setActiveFilter] = useState<"open" | "closed">("open");
   const [sharePosition, setSharePosition] = useState<PositionItem | null>(null);
 
+  // --- Calculate Stats for the "About Token" Panel ---
+  const priceChange = selectedToken.priceChange || {};
+  const txns = selectedToken.txns || {};
+
+  // Extract changes, fallback to mock values proportional to 24h change if missing
+  const change5m = priceChange.m5 ?? Number((selectedToken.change24h * 0.12).toFixed(2));
+  const change1h = priceChange.h1 ?? Number((selectedToken.change24h * 0.42).toFixed(2));
+  const change4h = priceChange.h6 ?? Number((selectedToken.change24h * 0.78).toFixed(2));
+  const change1d = selectedToken.change24h;
+
+  // Extract transactions, fallback to mock values
+  const buys24h = txns.h24?.buys ?? 180;
+  const sells24h = txns.h24?.sells ?? 150;
+  const totalTrades = buys24h + sells24h;
+  const buyRatio = totalTrades > 0 ? buys24h / totalTrades : 0.5;
+
+  // Volume splits
+  const vol24h = selectedToken.volume24h ?? 25000;
+  const buyVol = vol24h * buyRatio;
+  const sellVol = vol24h * (1 - buyRatio);
+
+  // Buyers vs Sellers counts
+  const buyersCount = Math.floor(buys24h * 0.85);
+  const sellersCount = Math.floor(sells24h * 0.88);
+  const totalUsers = buyersCount + sellersCount;
+  const buyerRatio = totalUsers > 0 ? buyersCount / totalUsers : 0.5;
+
+  // Format large numbers helper
+  const formatCompact = (num: number, isCurrency = true) => {
+    const prefix = isCurrency ? "$" : "";
+    if (num >= 1e6) return `${prefix}${(num / 1e6).toFixed(1)}M`;
+    if (num >= 1e3) return `${prefix}${(num / 1e3).toFixed(1)}K`;
+    return `${prefix}${num.toFixed(0)}`;
+  };
+
   return (
-    <div className="bg-transparent p-4 flex flex-col gap-3 h-full">
-      <div className="flex items-center gap-1.5 border-b border-dark-border/40 pb-2 mb-1">
-        <TrendingUp className="w-4 h-4 text-brand-green" />
-        <span className="font-extrabold text-sm tracking-wide text-foreground/80 uppercase font-mono">
-          Your Positions
-        </span>
+    <div className="flex flex-col gap-4 font-mono text-xs select-none">
+      {/* ============================================================== */}
+      {/* 1. About Token Card                                            */}
+      {/* ============================================================== */}
+      <div className="bg-[#06070a] border border-[#161b26]/80 rounded p-4 flex flex-col gap-3">
+        <span className="font-bold text-gray-200">About {selectedToken.symbol}</span>
+        
+        {/* Token Description */}
+        <p className="text-[10px] text-gray-500 leading-relaxed max-h-16 overflow-y-auto scrollbar-none font-sans">
+          {selectedToken.description || `For the on-chain operations of ${selectedToken.name} on the Solana blockchain.`}
+        </p>
+
+        {/* Time intervals grid */}
+        <div className="grid grid-cols-4 gap-1 text-[10px] font-bold text-center">
+          {/* 5M */}
+          <div className="bg-[#0d0e12] border border-[#161b26]/60 rounded py-1 flex flex-col gap-0.5">
+            <span className="text-gray-500 text-[8px] uppercase">5m</span>
+            <span className={change5m >= 0 ? "text-emerald-500" : "text-rose-500"}>
+              {change5m >= 0 ? "▲" : "▼"}{Math.abs(change5m).toFixed(2)}%
+            </span>
+          </div>
+          {/* 1H */}
+          <div className="bg-[#0d0e12] border border-[#161b26]/60 rounded py-1 flex flex-col gap-0.5">
+            <span className="text-gray-500 text-[8px] uppercase">1h</span>
+            <span className={change1h >= 0 ? "text-emerald-500" : "text-rose-500"}>
+              {change1h >= 0 ? "▲" : "▼"}{Math.abs(change1h).toFixed(2)}%
+            </span>
+          </div>
+          {/* 4H */}
+          <div className="bg-[#0d0e12] border border-[#161b26]/60 rounded py-1 flex flex-col gap-0.5">
+            <span className="text-gray-500 text-[8px] uppercase">4h</span>
+            <span className={change4h >= 0 ? "text-emerald-500" : "text-rose-500"}>
+              {change4h >= 0 ? "▲" : "▼"}{Math.abs(change4h).toFixed(2)}%
+            </span>
+          </div>
+          {/* 1D */}
+          <div className="bg-[#0d0e12] border border-[#161b26]/60 rounded py-1 flex flex-col gap-0.5">
+            <span className="text-gray-500 text-[8px] uppercase">1d</span>
+            <span className={change1d >= 0 ? "text-emerald-500" : "text-rose-500"}>
+              {change1d >= 0 ? "▲" : "▼"}{Math.abs(change1d).toFixed(2)}%
+            </span>
+          </div>
+        </div>
+
+        {/* Buys vs Sells Counts Progress Bar */}
+        <div className="space-y-1.5 text-[10px] font-bold">
+          <div className="flex justify-between items-center">
+            <span className="text-emerald-500">{buys24h} buys</span>
+            <span className="text-rose-500">{sells24h} sells</span>
+          </div>
+          <div className="w-full h-1 bg-rose-600 rounded-full overflow-hidden flex">
+            <div className="bg-emerald-500 h-full" style={{ width: `${buyRatio * 100}%` }}></div>
+          </div>
+        </div>
+
+        {/* Volume splits Progress Bar */}
+        <div className="space-y-1.5 text-[10px] font-bold">
+          <div className="flex justify-between items-center">
+            <span className="text-emerald-500">{formatCompact(buyVol)} vol.</span>
+            <span className="text-rose-500">{formatCompact(sellVol)} vol.</span>
+          </div>
+          <div className="w-full h-1 bg-rose-600 rounded-full overflow-hidden flex">
+            <div className="bg-emerald-500 h-full" style={{ width: `${buyRatio * 100}%` }}></div>
+          </div>
+        </div>
+
+        {/* Buyers vs Sellers Counts Progress Bar */}
+        <div className="space-y-1.5 text-[10px] font-bold">
+          <div className="flex justify-between items-center">
+            <span className="text-emerald-500">{buyersCount} buyers</span>
+            <span className="text-rose-500">{sellersCount} sellers</span>
+          </div>
+          <div className="w-full h-1 bg-rose-600 rounded-full overflow-hidden flex">
+            <div className="bg-emerald-500 h-full" style={{ width: `${buyerRatio * 100}%` }}></div>
+          </div>
+        </div>
+
+        {/* View More Option */}
+        <button className="w-full py-1 text-[10px] font-bold text-gray-500 hover:text-gray-300 bg-[#0d0e12] border border-[#161b26] rounded flex items-center justify-center gap-1 transition-colors cursor-pointer">
+          View more
+          <ChevronDown className="w-3.5 h-3.5" />
+        </button>
       </div>
 
-      <div className="space-y-3 flex-1 overflow-y-auto pr-1">
-        {positions.length > 0 ? (
-          positions.map((pos) => {
-            const currentPrice =
-              pos.token.symbol === "SOL" ? solPrice : pos.token.price;
-            const entryValue = pos.balance * pos.entryPrice;
-            const currentValue = pos.balance * currentPrice;
-            const pnlUsd = currentValue - entryValue;
-            const pnlPct = entryValue > 0 ? (pnlUsd / entryValue) * 100 : 0;
-            const isPositive = pnlPct >= 0;
+      {/* ============================================================== */}
+      {/* 2. Your Positions Card                                         */}
+      {/* ============================================================== */}
+      <div className="bg-[#06070a] border border-[#161b26]/80 rounded p-4 flex flex-col gap-3 flex-1 min-h-0">
+        <div className="flex items-center justify-between">
+          <span className="font-bold text-gray-200">Your positions</span>
+          
+          {/* Open/Closed Filter Toggle */}
+          <div className="flex bg-[#0d0e12] border border-[#161b26] p-0.5 rounded text-[10px] font-bold h-7">
+            <button
+              onClick={() => setActiveFilter("open")}
+              className={`px-2.5 rounded transition-all cursor-pointer ${
+                activeFilter === "open" ? "bg-[#1d2433] text-gray-200" : "text-gray-500 hover:text-gray-300"
+              }`}
+            >
+              Open
+            </button>
+            <button
+              onClick={() => setActiveFilter("closed")}
+              className={`px-2.5 rounded transition-all cursor-pointer ${
+                activeFilter === "closed" ? "bg-[#1d2433] text-gray-200" : "text-gray-500 hover:text-gray-300"
+              }`}
+            >
+              Closed
+            </button>
+          </div>
+        </div>
 
-            return (
-              <div
-                key={pos.token.symbol}
-                className="bg-dark-card/40 border border-dark-border/50 hover:border-dark-border rounded-xl p-3 flex flex-col gap-2.5 transition-all"
-              >
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    {pos.token.logo ? (
-                      <Image
-                        src={pos.token.logo}
-                        alt={pos.token.symbol}
-                        width={24}
-                        height={24}
-                        className="rounded-full object-cover shadow-inner select-none bg-dark-bg"
-                      />
-                    ) : (
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-brand-green to-brand-cyan flex items-center justify-center text-[10px] font-black text-white">
-                        {pos.token.symbol.substring(0, 2)}
+        {/* Positions List container */}
+        <div className="flex-1 overflow-y-auto max-h-[220px] divide-y divide-[#161b26]/40">
+          {activeFilter === "open" && positions.length > 0 ? (
+            positions.map((pos) => {
+              const currentPrice = pos.token.mint === "So11111111111111111111111111111111111111112" ? solPrice : pos.token.price;
+              const currentValue = pos.balance * currentPrice;
+              const entryValue = pos.balance * pos.entryPrice;
+              const pnlUsd = currentValue - entryValue;
+              const pnlPct = entryValue > 0 ? (pnlUsd / entryValue) * 100 : 0;
+              const isPositive = pnlPct >= 0;
+
+              return (
+                <div key={pos.token.mint} className="py-2.5 flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {pos.token.logo ? (
+                        <Image
+                          src={pos.token.logo}
+                          alt={pos.token.symbol}
+                          width={24}
+                          height={24}
+                          unoptimized
+                          className="w-6 h-6 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-blue-950 flex items-center justify-center font-black text-[9px] uppercase">
+                          {pos.token.symbol.substring(0, 2)}
+                        </div>
+                      )}
+                      <div>
+                        <span className="font-bold text-gray-200">{pos.token.symbol}</span>
+                        <span className="text-[9px] text-gray-600 block">
+                          Bal: {pos.balance.toLocaleString(undefined, { maximumFractionDigits: pos.token.symbol === "SOL" ? 3 : 0 })}
+                        </span>
                       </div>
-                    )}
-                    <div>
-                      <span className="font-bold text-xs text-foreground/90">
-                        {pos.token.symbol}
-                      </span>
-                      <span className="text-[9px] text-foreground/40 font-mono block">
-                        Bal:{" "}
-                        {pos.balance.toLocaleString(undefined, {
-                          maximumFractionDigits:
-                            pos.token.symbol === "SOL" ? 4 : 2,
-                        })}
+                    </div>
+
+                    <div className="text-right">
+                      <span className="font-bold text-gray-200 block">${currentValue.toFixed(2)}</span>
+                      <span className={`text-[10px] font-bold ${isPositive ? "text-emerald-500" : "text-rose-500"}`}>
+                        {isPositive ? "+" : ""}{pnlPct.toFixed(2)}%
                       </span>
                     </div>
                   </div>
 
-                  <div className="text-right">
-                    <span className="font-mono text-xs font-semibold text-foreground/90 block">
-                      $
-                      {currentValue.toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </span>
-                    <span
-                      className={`text-[10px] font-mono font-bold ${
-                        isPositive ? "text-brand-green" : "text-brand-red"
-                      }`}
-                    >
-                      {isPositive ? "+" : ""}
-                      {pnlPct.toFixed(2)}%
-                    </span>
-                  </div>
-                </div>
-
-                {/* Info row */}
-                <div className="flex justify-between items-center text-[9px] text-foreground/45 border-t border-dark-border/20 pt-2 font-mono">
-                  <div>
-                    Avg Entry:{" "}
-                    <span className="text-foreground/70">
-                      $
-                      {pos.entryPrice.toLocaleString(undefined, {
-                        minimumFractionDigits: pos.entryPrice < 0.01 ? 6 : 2,
-                      })}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setSharePosition(pos)}
-                      className="inline-flex items-center gap-0.5 text-brand-green hover:text-brand-cyan transition-colors font-bold uppercase"
-                    >
-                      <Share2 className="w-2.5 h-2.5" />
-                      Share
-                    </button>
-                    {pos.token.symbol !== "SOL" && (
+                  {/* Actions bar */}
+                  <div className="flex items-center justify-between text-[9px] text-gray-500 border-t border-[#161b26]/20 pt-1.5 font-mono">
+                    <span>Entry: ${pos.entryPrice < 0.01 ? pos.entryPrice.toFixed(6) : pos.entryPrice.toFixed(3)}</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setSharePosition(pos)}
+                        className="text-[#0df294] hover:underline font-bold uppercase cursor-pointer"
+                      >
+                        Share
+                      </button>
                       <button
                         onClick={() => onClosePosition(pos.token)}
-                        className="text-brand-red hover:text-red-400 transition-colors font-bold uppercase"
+                        className="text-rose-400 hover:underline font-bold uppercase cursor-pointer"
                       >
                         Close
                       </button>
-                    )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })
-        ) : (
-          <div className="py-8 text-center text-xs text-foreground/30 font-mono">
-            No active positions. Buy a token to open a position.
-          </div>
-        )}
+              );
+            })
+          ) : (
+            <div className="py-8 text-center text-xs text-gray-600 font-mono">
+              {activeFilter === "open" ? "No open positions" : "No closed positions history."}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Share P&L Modal Overlay */}
-      {sharePosition &&
-        (() => {
-          const currentPrice =
-            sharePosition.token.symbol === "SOL"
-              ? solPrice
-              : sharePosition.token.price;
-          const entryValue = sharePosition.balance * sharePosition.entryPrice;
-          const currentValue = sharePosition.balance * currentPrice;
-          const pnlUsd = currentValue - entryValue;
-          const pnlPct = entryValue > 0 ? (pnlUsd / entryValue) * 100 : 0;
-          const isPositive = pnlPct >= 0;
+      {sharePosition && (
+        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0d0e12] border border-[#1d2433] rounded max-w-sm w-full p-5 relative font-mono text-xs">
+            <div className="flex justify-between items-center mb-4">
+              <span className="flex items-center gap-1.5 text-xs text-[#0df294] font-extrabold uppercase tracking-wider">
+                <Sparkles className="w-3.5 h-3.5 fill-[#0df294]/20" />
+                Multiplier Card
+              </span>
+              <button
+                onClick={() => setSharePosition(null)}
+                className="p-1 rounded border border-[#161b26] text-gray-500 hover:text-gray-300 hover:bg-[#161b26] transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
-          return (
-            <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-              <div className="bg-dark-bg border border-dark-border/80 rounded-2xl max-w-sm w-full p-5 relative overflow-hidden group glow-green shadow-2xl">
-                {/* Outer Cyber grid decoration */}
-                <div className="absolute inset-0 opacity-5 bg-[linear-gradient(rgba(139,92,246,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.1)_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none"></div>
-
-                {/* Top controls */}
-                <div className="flex justify-between items-center mb-6 relative z-10">
-                  <div className="flex items-center gap-1.5 text-xs text-brand-cyan font-extrabold uppercase font-mono tracking-wider">
-                    <Sparkles className="w-3.5 h-3.5 fill-brand-cyan/20" />
-                    Multiplier Card
-                  </div>
-                  <button
-                    onClick={() => setSharePosition(null)}
-                    className="p-1 rounded-lg border border-dark-border text-foreground/45 hover:text-foreground hover:bg-dark-card transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+            {/* P&L Poster */}
+            <div className="w-full aspect-[4/5] rounded border border-gray-700 bg-gradient-to-br from-[#06070a] to-[#0d0e12] p-5 flex flex-col justify-between relative shadow-2xl overflow-hidden">
+              <div className="absolute top-0 right-0 w-36 h-36 bg-[#0df294]/5 rounded-full blur-[40px] -z-10"></div>
+              
+              <div className="flex justify-between items-start">
+                <div>
+                  <span className="text-[9px] text-gray-500 tracking-wider block uppercase font-bold">FOMO TRADING</span>
+                  <span className="font-extrabold text-sm text-gray-200 uppercase mt-0.5 block">{sharePosition.token.symbol}/SOL</span>
                 </div>
-
-                {/* The P&L Card itself (to screenshot/admire) */}
-                <div className="w-full aspect-[4/5] rounded-xl bg-gradient-to-br from-dark-panel via-dark-card to-dark-panel border border-brand-green/40 p-5 flex flex-col justify-between relative shadow-2xl overflow-hidden">
-                  {/* Floating blurs inside card */}
-                  <div className="absolute top-0 right-0 w-36 h-36 bg-brand-green/10 rounded-full blur-[40px] -z-10"></div>
-                  <div className="absolute bottom-0 left-0 w-36 h-36 bg-brand-cyan/10 rounded-full blur-[40px] -z-10"></div>
-
-                  {/* Card Header */}
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <span className="text-[10px] text-foreground/45 tracking-widest font-bold block uppercase font-mono">
-                        ChadWallet Positions
-                      </span>
-                      <span className="font-extrabold text-lg text-foreground tracking-wide font-mono uppercase mt-1 block">
-                        {sharePosition.token.symbol}/SOL
-                      </span>
-                    </div>
-                    <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-brand-green to-brand-cyan flex items-center justify-center font-black text-white text-sm">
-                      C
-                    </div>
-                  </div>
-
-                  {/* Large Return Info */}
-                  <div className="text-center my-6">
-                    <div className="text-[10px] text-foreground/35 tracking-widest font-extrabold uppercase font-mono">
-                      PROFIT & LOSS MULTIPLIER
-                    </div>
-                    <div
-                      className={`text-5xl font-black font-mono tracking-tighter mt-2 filter drop-shadow-[0_0_12px_rgba(16,185,129,0.15)] ${
-                        isPositive ? "text-brand-green" : "text-brand-red"
-                      }`}
-                    >
-                      {isPositive ? "+" : ""}
-                      {pnlPct.toFixed(1)}%
-                    </div>
-                    <div className="text-[10px] font-mono text-foreground/50 mt-1">
-                      Value: $
-                      {currentValue.toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Card Footer */}
-                  <div className="flex justify-between items-end border-t border-dark-border/40 pt-4 font-mono text-[9px] text-foreground/40">
-                    <div className="space-y-0.5">
-                      <div>
-                        Entry: $
-                        {sharePosition.entryPrice.toLocaleString(undefined, {
-                          minimumFractionDigits:
-                            sharePosition.entryPrice < 0.01 ? 6 : 2,
-                        })}
-                      </div>
-                      <div>
-                        Exit Index: $
-                        {currentPrice.toLocaleString(undefined, {
-                          minimumFractionDigits: currentPrice < 0.01 ? 6 : 2,
-                        })}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-extrabold text-gradient block tracking-wider text-[10px] uppercase font-mono">
-                        CHADWALLET
-                      </span>
-                      <span className="text-[8px] text-foreground/30">
-                        Join the social loop
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Share actions */}
-                <div className="mt-5 flex gap-2 relative z-10">
-                  <button
-                    onClick={() => {
-                      alert(
-                        "Copied link to clipboard! Ready to share on Twitter/Telegram.",
-                      );
-                      setSharePosition(null);
-                    }}
-                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-brand-green to-brand-cyan hover:shadow-lg hover:shadow-brand-green/20 text-white font-bold text-xs transition-all text-center"
-                  >
-                    Copy Share Link
-                  </button>
+                <div className="w-7 h-7 rounded bg-[#11241a] border border-[#0df294]/30 flex items-center justify-center font-black text-[#0df294] text-xs">
+                  F
                 </div>
               </div>
+
+              <div className="text-center my-6">
+                <div className="text-[9px] text-gray-600 tracking-widest font-extrabold uppercase">MULTIPLE RETURN</div>
+                <div className={`text-4xl font-black mt-2 text-emerald-500 filter drop-shadow-[0_0_8px_rgba(16,185,129,0.2)]`}>
+                  +{( ( (sharePosition.token.price - sharePosition.entryPrice) / sharePosition.entryPrice ) * 100 ).toFixed(1)}%
+                </div>
+              </div>
+
+              <div className="flex justify-between items-end border-t border-gray-800 pt-3 text-[9px] text-gray-500 font-mono">
+                <div>
+                  <div>Entry: ${sharePosition.entryPrice < 0.01 ? sharePosition.entryPrice.toFixed(6) : sharePosition.entryPrice.toFixed(3)}</div>
+                  <div>Mark: ${sharePosition.token.price < 0.01 ? sharePosition.token.price.toFixed(6) : sharePosition.token.price.toFixed(3)}</div>
+                </div>
+                <span className="font-black text-[#0df294] tracking-widest text-[9px]">FOMO</span>
+              </div>
             </div>
-          );
-        })()}
+
+            <button
+              onClick={() => {
+                alert("Share card link copied to clipboard!");
+                setSharePosition(null);
+              }}
+              className="mt-4 w-full py-2.5 rounded bg-[#0df294] text-black font-extrabold text-xs hover:bg-[#0df294]/90 active:scale-[0.98] transition-all text-center cursor-pointer"
+            >
+              Copy Link
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

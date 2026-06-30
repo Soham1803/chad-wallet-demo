@@ -2,98 +2,25 @@
 
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import RotatingBanner, { TokenTicker } from "@/components/RotatingBanner";
+import TradingHeader from "@/components/TradingHeader";
+import TradingFooter from "@/components/TradingFooter";
 import TrendingTokens from "@/components/TrendingTokens";
 import TokenChart from "@/components/TokenChart";
 import ActivityFeed from "@/components/ActivityFeed";
 import SwapWidget from "@/components/SwapWidget";
 import Positions from "@/components/Positions";
-import { fetchRealTokenPrices } from "@/utils/solanaApi";
+import { fetchTokenFullDetails, TokenDetails } from "@/utils/solanaApi";
 import { usePrivy } from "@/components/PrivyProviderWrapper";
-import { Lock, Wallet, ArrowLeft } from "lucide-react";
+import { Lock, ArrowLeft } from "lucide-react";
 import useResponsive from "@/hooks/useResponsive";
 import { AppleAppLink, GooglePlayAppLink } from "@/components/MobileAppLinks";
 
-// Constants matching our pre-defined tokens list
-const TOKENS: TokenTicker[] = [
-  {
-    symbol: "SOL",
-    name: "Solana",
-    price: 142.45,
-    change24h: 5.34,
-    mint: "So11111111111111111111111111111111111111112",
-    decimals: 9,
-    logo: "https://coin-images.coingecko.com/coins/images/4128/large/solana.png",
-  },
-  {
-    symbol: "CHAD",
-    name: "ChadWallet Token",
-    price: 0.0425,
-    change24h: 15.42,
-    mint: "CHADxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-    decimals: 9,
-    logo: "/logos/dark.png",
-  },
-  {
-    symbol: "BONK",
-    name: "Bonk",
-    price: 0.00002134,
-    change24h: -2.15,
-    mint: "DezXAZ8z7PnrFcPykJzbO5JHcUqpHE8GDJEDgimOBBN",
-    decimals: 5,
-    logo: "https://coin-images.coingecko.com/coins/images/28600/large/bonk.jpg",
-  },
-  {
-    symbol: "WIF",
-    name: "dogwifhat",
-    price: 2.12,
-    change24h: 12.85,
-    mint: "EKpQGSJtjMFqKZ9KQGWjzD4WCo4PDaf8dZVWudqwm1W7",
-    decimals: 6,
-    logo: "https://coin-images.coingecko.com/coins/images/33566/large/dogwifhat.jpg",
-  },
-  {
-    symbol: "POPCAT",
-    name: "Popcat",
-    price: 0.824,
-    change24h: -4.32,
-    mint: "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr",
-    decimals: 6,
-    logo: "https://coin-images.coingecko.com/coins/images/33760/large/image.jpg",
-  },
-  {
-    symbol: "JUP",
-    name: "Jupiter",
-    price: 0.785,
-    change24h: 1.45,
-    mint: "JUPyiwrYd2CQCChjJUiKVtH7jEEJ22u2w7j6r2FmWZq",
-    decimals: 6,
-    logo: "https://coin-images.coingecko.com/coins/images/34188/large/jup.png",
-  },
-  {
-    symbol: "MEW",
-    name: "cat in a dogs world",
-    price: 0.00412,
-    change24h: 8.76,
-    mint: "MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5",
-    decimals: 6,
-    logo: "https://coin-images.coingecko.com/coins/images/36440/large/MEW.png",
-  },
-  {
-    symbol: "BOME",
-    name: "BOOK OF MEME",
-    price: 0.00845,
-    change24h: -0.84,
-    mint: "ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82",
-    decimals: 6,
-    logo: "https://coin-images.coingecko.com/coins/images/36071/large/bome.png",
-  },
-];
+import defaultTokensJson from "@/data/defaultTokens.json";
+
+const DEFAULT_TOKENS: TokenDetails[] = defaultTokensJson as TokenDetails[];
 
 interface PositionItem {
-  token: TokenTicker;
+  token: TokenDetails;
   balance: number;
   entryPrice: number;
   currentPrice: number;
@@ -104,81 +31,139 @@ function TradingContent() {
   const router = useRouter();
 
   // Active token selection state
-  const [selectedToken, setSelectedToken] = useState<TokenTicker>(TOKENS[0]);
+  const [selectedToken, setSelectedToken] = useState<TokenDetails>(DEFAULT_TOKENS[0]);
 
   // Live-updating token values
-  const [liveTokens, setLiveTokens] = useState<TokenTicker[]>(TOKENS);
+  const [liveTokens, setLiveTokens] = useState<TokenDetails[]>(DEFAULT_TOKENS);
 
   // Starting mock user balances: 5.5 SOL and 1000 CHAD to demo features instantly
   const [solBalance, setSolBalance] = useState(5.5);
   const [tokenBalances, setTokenBalances] = useState<Record<string, number>>({
     SOL: 5.5,
-    CHAD: 1000,
+    jailstool: 150000,
+    ANSEM: 450,
   });
 
   // Calculate live SOL price dynamically from state
   const solTokenItem = liveTokens.find((t) => t.symbol === "SOL");
-  const SOL_PRICE = solTokenItem ? solTokenItem.price : 142.45;
+  const SOL_PRICE = solTokenItem ? solTokenItem.price : 74.28;
 
   // Active positions state
   const [positions, setPositions] = useState<PositionItem[]>([
     {
-      token: TOKENS[1], // CHAD
-      balance: 1000,
-      entryPrice: 0.038,
-      currentPrice: 0.0425,
+      token: DEFAULT_TOKENS[0], // jailstool
+      balance: 150000,
+      entryPrice: 0.001047,
+      currentPrice: 0.001107,
     },
+    {
+      token: DEFAULT_TOKENS[1], // ANSEM
+      balance: 450,
+      entryPrice: 0.138,
+      currentPrice: 0.141,
+    }
   ]);
 
   // Synergize URL parameter queries with selectedToken state
   useEffect(() => {
     const tokenQuery = searchParams.get("token");
-    if (tokenQuery) {
-      const match = liveTokens.find(
-        (t) => t.symbol.toUpperCase() === tokenQuery.toUpperCase(),
-      );
-      if (match && selectedToken.symbol !== match.symbol) {
-        setTimeout(() => setSelectedToken(match), 0);
-      }
-    }
-  }, [searchParams, liveTokens, selectedToken]);
+    if (!tokenQuery) return;
 
-  // Fetch real-time token prices and changes from DexScreener
-  useEffect(() => {
-    const updatePrices = async () => {
-      setLiveTokens((prev) => {
-        fetchRealTokenPrices(prev).then((updated) => {
-          setLiveTokens(updated);
-          // Sync selected token
-          const updatedSelected = updated.find(
-            (t) => t.symbol === selectedToken.symbol,
-          );
-          if (
-            updatedSelected &&
-            updatedSelected.price !== selectedToken.price
-          ) {
-            setSelectedToken(updatedSelected);
-          }
+    // Check if we already have it in liveTokens
+    const match = liveTokens.find(
+      (t) => t.symbol.toUpperCase() === tokenQuery.toUpperCase() || t.mint === tokenQuery
+    );
+
+    if (match) {
+      if (selectedToken.mint !== match.mint) {
+        setSelectedToken(match);
+      }
+    } else {
+      // Fetch details from DexScreener if it's a new token not in the default list
+      let active = true;
+      fetchTokenFullDetails(tokenQuery).then((details) => {
+        if (!active || !details) return;
+        setLiveTokens((prev) => {
+          if (prev.some((t) => t.mint === details.mint)) return prev;
+          return [...prev, details];
         });
-        return prev;
+        setSelectedToken(details);
       });
+      return () => {
+        active = false;
+      };
+    }
+  }, [searchParams, liveTokens, selectedToken.mint]);
+
+  // Periodic polling for prices and full selected token details
+  useEffect(() => {
+    const updatePricesAndDetails = async () => {
+      // 1. Fetch price updates for all static tokens in the list
+      const basicMints = liveTokens
+        .filter((t) => t.mint && !t.mint.includes("xxx"))
+        .map((t) => t.mint);
+
+      if (basicMints.length > 0) {
+        try {
+          const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${basicMints.join(",")}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.pairs && Array.isArray(data.pairs)) {
+              setLiveTokens((prev) => {
+                return prev.map((token) => {
+                  const matchingPairs = data.pairs.filter(
+                    (p: any) => p.chainId === "solana" && p.baseToken.address === token.mint
+                  );
+                  if (matchingPairs.length === 0) return token;
+
+                  const bestPair = matchingPairs.reduce((best: any, curr: any) => {
+                    return (curr.liquidity?.usd || 0) > (best.liquidity?.usd || 0) ? curr : best;
+                  }, matchingPairs[0]);
+
+                  return {
+                    ...token,
+                    price: Number(bestPair.priceUsd) || token.price,
+                    change24h: Number(bestPair.priceChange?.h24) || token.change24h,
+                    marketCap: bestPair.marketCap || bestPair.fdv || token.marketCap,
+                    volume24h: bestPair.volume?.h24 || token.volume24h,
+                    liquidity: bestPair.liquidity?.usd || token.liquidity,
+                  };
+                });
+              });
+            }
+          }
+        } catch (err) {
+          console.error("Error fetching live sidebar prices:", err);
+        }
+      }
+
+      // 2. Fetch full details for the active selected token to keep progress bars fresh
+      if (selectedToken.mint && !selectedToken.mint.includes("xxx")) {
+        const details = await fetchTokenFullDetails(selectedToken.mint);
+        if (details) {
+          setSelectedToken(details);
+          // Sync it in liveTokens list too
+          setLiveTokens((prev) =>
+            prev.map((t) => (t.mint === details.mint ? details : t))
+          );
+        }
+      }
     };
 
-    updatePrices(); // Initial load
-    const interval = setInterval(updatePrices, 15000); // Polling every 15s
-
+    updatePricesAndDetails(); // initial trigger
+    const interval = setInterval(updatePricesAndDetails, 15000); // refresh every 15s
     return () => clearInterval(interval);
-  }, [selectedToken]);
+  }, [selectedToken.mint]);
 
-  const handleSelectToken = (token: TokenTicker) => {
+  const handleSelectToken = (token: TokenDetails) => {
     setSelectedToken(token);
-    router.push(`/trading?token=${token.symbol}`);
+    router.push(`/trading?token=${token.mint}`);
   };
 
   // Execution handler for Buying/Selling swaps
   const handleTradeExecution = (
     action: "BUY" | "SELL",
-    tradeToken: TokenTicker,
+    tradeToken: TokenDetails,
     amountToken: number,
     amountSol: number,
   ) => {
@@ -196,12 +181,11 @@ function TradingContent() {
       // Add or update open position
       setPositions((prev) => {
         const existIdx = prev.findIndex(
-          (p) => p.token.symbol === tradeToken.symbol,
+          (p) => p.token.mint === tradeToken.mint,
         );
         if (existIdx >= 0) {
           const exist = prev[existIdx];
           const newBalance = exist.balance + amountToken;
-          // Calculate weighted average entry price
           const newEntryPrice =
             (exist.balance * exist.entryPrice +
               amountToken * tradeToken.price) /
@@ -241,13 +225,13 @@ function TradingContent() {
       // Update positions
       setPositions((prev) => {
         const existIdx = prev.findIndex(
-          (p) => p.token.symbol === tradeToken.symbol,
+          (p) => p.token.mint === tradeToken.mint,
         );
         if (existIdx >= 0) {
           const exist = prev[existIdx];
           const newBalance = Math.max(0, exist.balance - amountToken);
           if (newBalance <= 0) {
-            return prev.filter((p) => p.token.symbol !== tradeToken.symbol);
+            return prev.filter((p) => p.token.mint !== tradeToken.mint);
           } else {
             const updated = [...prev];
             updated[existIdx] = {
@@ -264,62 +248,51 @@ function TradingContent() {
   };
 
   // Close position entirely
-  const handleClosePosition = (closeToken: TokenTicker) => {
-    const exist = positions.find((p) => p.token.symbol === closeToken.symbol);
+  const handleClosePosition = (closeToken: TokenDetails) => {
+    const exist = positions.find((p) => p.token.mint === closeToken.mint);
     if (!exist) return;
 
-    // Calculate equivalent SOL returned
     const solValue = (exist.balance * closeToken.price) / SOL_PRICE;
-
-    // Process sell swap for the entire amount
     handleTradeExecution("SELL", closeToken, exist.balance, solValue);
   };
 
   return (
-    <div className="flex-1 w-full min-h-0 mx-auto px-4 md:px-8 py-2 flex flex-col overflow-hidden">
-      {/* Main trading columns dashboard */}
-      <div className="flex justify-between w-full flex-1 min-h-0 items-stretch border-t border-dark-border/40">
-        {/* Column 1: Left Pane - Token Lists (1/4 width) */}
-        <div className="lg:col-span-1 w-1/5 h-full border-r border-dark-border/40 pr-4 pt-2 pb-4">
-          <TrendingTokens
-            tokens={liveTokens}
-            selectedToken={selectedToken}
-            onSelectToken={handleSelectToken}
-          />
-        </div>
+    <div className="flex-1 flex overflow-hidden min-h-0 items-stretch bg-[#06070a] border-t border-[#161b26]/60">
+      {/* Column 1: Left Pane - Token Lists (280px width) */}
+      <div className="w-[280px] h-full shrink-0 flex flex-col">
+        <TrendingTokens
+          tokens={liveTokens}
+          selectedToken={selectedToken}
+          onSelectToken={handleSelectToken}
+        />
+      </div>
 
-        {/* Column 2 & 3: Middle Pane - Charts & Live Activity (2/4 width) */}
-        <div className="lg:col-span-2 flex flex-col flex-1 min-h-0 px-4 pt-2 pb-4">
-          <div className="flex-1 min-h-[350px] border-b border-dark-border/40 pb-4">
-            <TokenChart token={selectedToken} />
-          </div>
-          <div className="h-[280px] pt-4">
-            <ActivityFeed token={selectedToken} solPrice={SOL_PRICE} />
-          </div>
+      {/* Column 2: Middle Pane - Charts & Live Activity (flex-1 width) */}
+      <div className="flex-1 h-full flex flex-col border-r border-[#161b26]/80 overflow-hidden min-w-0">
+        <div className="flex-1 min-h-0">
+          <TokenChart token={selectedToken} />
         </div>
-
-        {/* Column 4: Right Pane - Swap terminal & Positions (1/4 width) */}
-        <div className="lg:col-span-1 w-1/5 flex flex-col min-h-0 border-l border-dark-border/40 pl-4 pt-2 pb-4">
-          <div className="border-b border-dark-border/40 pb-4">
-            <SwapWidget
-              token={selectedToken}
-              solBalance={solBalance}
-              tokenBalance={tokenBalances[selectedToken.symbol] || 0}
-              onTrade={handleTradeExecution}
-              solPrice={SOL_PRICE}
-            />
-          </div>
-          <div className="flex-1 min-h-0 pt-4">
-            <Positions
-              positions={positions}
-              onClosePosition={handleClosePosition}
-              solPrice={SOL_PRICE}
-            />
-          </div>
+        <div className="h-[320px] shrink-0 border-t border-[#161b26]/80">
+          <ActivityFeed token={selectedToken} solPrice={SOL_PRICE} />
         </div>
       </div>
-      {/* Top compact ticker banner */}
-      <RotatingBanner reverse={false} />
+
+      {/* Column 3: Right Pane - Swap terminal & Positions/About (320px width) */}
+      <div className="w-[320px] h-full shrink-0 flex flex-col border-l border-[#161b26]/80 overflow-y-auto bg-[#06070a] p-3 gap-3 scrollbar-none">
+        <SwapWidget
+          token={selectedToken}
+          solBalance={solBalance}
+          tokenBalance={tokenBalances[selectedToken.symbol] || 0}
+          onTrade={handleTradeExecution}
+          solPrice={SOL_PRICE}
+        />
+        <Positions
+          positions={positions}
+          onClosePosition={handleClosePosition}
+          solPrice={SOL_PRICE}
+          selectedToken={selectedToken}
+        />
+      </div>
     </div>
   );
 }
@@ -343,26 +316,26 @@ export default function TradingPage() {
   // If mobile, show desktop-only warning
   if (isMobile) {
     return (
-      <div className="flex flex-col min-h-screen bg-dark-bg text-foreground">
-        <Header />
+      <div className="flex flex-col min-h-screen bg-[#06070a] text-foreground font-mono">
+        <TradingHeader />
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto">
           <div className="relative mb-8">
-            <div className="absolute inset-0 rounded-full bg-brand-cyan/20 blur-xl animate-pulse"></div>
-            <div className="w-20 h-20 rounded-2xl bg-dark-panel border border-brand-cyan/40 flex items-center justify-center text-brand-cyan shadow-lg shadow-brand-cyan/10 relative">
+            <div className="absolute inset-0 rounded-full bg-cyan-500/20 blur-xl animate-pulse"></div>
+            <div className="w-20 h-20 rounded bg-[#0d0e12] border border-[#1d2433] flex items-center justify-center text-cyan-450 shadow-lg shadow-cyan-500/10 relative">
               <span className="text-3xl">💻</span>
             </div>
           </div>
 
-          <h1 className="text-2xl font-extrabold tracking-wider uppercase font-mono text-gradient mb-4">
+          <h1 className="text-xl font-extrabold tracking-wider uppercase mb-4 text-gray-200">
             Desktop Only
           </h1>
-          <p className="text-sm text-foreground/75 leading-relaxed mb-8">
-            The ChadWallet Trading Terminal is only available on Desktop. Please
+          <p className="text-xs text-gray-500 leading-relaxed mb-8">
+            The fomo.family trading terminal is optimized for desktop trading layouts. Please
             switch to a desktop browser or download our mobile app.
           </p>
 
-          <div className="bg-dark-panel border border-dark-border/80 rounded-2xl p-5 w-full flex flex-col items-center gap-4">
-            <p className="text-xs text-foreground/50 font-semibold uppercase tracking-wider">
+          <div className="bg-[#0d0e12] border border-[#161b26] rounded p-5 w-full flex flex-col items-center gap-4">
+            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">
               Get the Mobile App
             </p>
             <div className="flex flex-col gap-3 w-full">
@@ -373,12 +346,11 @@ export default function TradingPage() {
 
           <button
             onClick={() => router.push("/")}
-            className="mt-8 text-xs text-brand-green font-bold hover:underline flex items-center gap-2 cursor-pointer"
+            className="mt-8 text-xs text-[#0df294] font-bold hover:underline flex items-center gap-2 cursor-pointer"
           >
             ← Back to Homepage
           </button>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -386,53 +358,52 @@ export default function TradingPage() {
   // If not ready, show the loader
   if (!ready) {
     return (
-      <div className="flex flex-col min-h-screen bg-dark-bg text-foreground">
-        <Header />
-        <div className="flex-1 flex flex-col items-center justify-center text-xs text-foreground/40 gap-3">
-          <div className="w-8 h-8 rounded-full border-2 border-brand-green border-t-transparent animate-spin"></div>
-          Loading ChadWallet Session...
+      <div className="flex flex-col min-h-screen bg-[#06070a] text-foreground font-mono">
+        <TradingHeader />
+        <div className="flex-1 flex flex-col items-center justify-center text-[11px] text-gray-500 gap-3">
+          <div className="w-6 h-6 rounded-full border-2 border-[#0df294] border-t-transparent animate-spin"></div>
+          Loading session...
         </div>
-        <Footer />
       </div>
     );
   }
 
-  // If not authenticated, render the beautiful error page
+  // If not authenticated, render the access denied / login screen
   if (!authenticated) {
     return (
-      <div className="flex flex-col min-h-screen bg-dark-bg text-foreground">
-        <Header />
+      <div className="flex flex-col min-h-screen bg-[#06070a] text-foreground font-mono">
+        <TradingHeader />
 
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto">
           {/* Neon Glow Lock Icon */}
           <div className="relative mb-6">
-            <div className="absolute inset-0 rounded-full bg-brand-red/20 blur-xl animate-pulse"></div>
-            <div className="w-20 h-20 rounded-2xl bg-dark-panel border border-brand-red/40 flex items-center justify-center text-brand-red shadow-lg shadow-brand-red/10 relative">
-              <Lock className="w-9 h-9" />
+            <div className="absolute inset-0 rounded-full bg-rose-500/20 blur-xl animate-pulse"></div>
+            <div className="w-20 h-20 rounded bg-[#0d0e12] border border-rose-500/30 flex items-center justify-center text-rose-500 shadow-lg shadow-rose-500/10 relative">
+              <Lock className="w-8 h-8" />
             </div>
           </div>
 
-          <h1 className="text-2xl font-extrabold tracking-wider uppercase font-mono text-gradient mb-3">
+          <h1 className="text-xl font-extrabold tracking-wider uppercase mb-3 text-gray-200">
             Access Denied
           </h1>
-          <p className="text-xs text-foreground/60 leading-relaxed mb-8">
-            The trading terminal is a secured zone. You must connect your Solana
+          <p className="text-xs text-gray-500 leading-relaxed mb-8">
+            The trading terminal is secure. You must connect your Solana
             embedded wallet via Privy to view order books, live charts, and
-            execute swaps.
+            execute trades.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
             <button
               onClick={login}
-              className="inline-flex items-center justify-center border border-brand-green/35 rounded-xl  gap-2 px-6 py-3 rounded-x text-white font-bold text-lg hover:shadow-lg hover:shadow-brand-green/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+              className="inline-flex items-center justify-center bg-[#0df294] text-black font-extrabold text-xs px-6 py-2.5 rounded shadow-lg hover:bg-[#0df294]/90 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 cursor-pointer"
             >
               Login
             </button>
             <button
               onClick={() => router.push("/")}
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-dark-panel hover:bg-dark-card border border-dark-border hover:border-foreground/20 text-foreground/80 hover:text-foreground text-lg font-semibold transition-all duration-200 cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded bg-[#0d0e12] hover:bg-[#161b26] border border-[#161b26] hover:border-gray-700 text-gray-400 hover:text-gray-200 text-xs font-bold transition-all duration-200 cursor-pointer"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-3.5 h-3.5" />
               Back to Home
             </button>
           </div>
@@ -443,21 +414,24 @@ export default function TradingPage() {
 
   // If authenticated, show the trading screen
   return (
-    <div className="flex flex-col h-screen bg-dark-bg text-foreground overflow-hidden">
-      {/* Navigation Header */}
-      <Header />
+    <div className="flex flex-col h-screen bg-[#06070a] text-foreground overflow-hidden">
+      {/* Navigation Header specifically for trading */}
+      <TradingHeader />
 
       {/* App router suspense wrapper to prevent static compilation issues with search params */}
       <Suspense
         fallback={
-          <div className="flex-1 flex flex-col h-screen items-center justify-center text-xs text-foreground/40 gap-3">
-            <div className="w-8 h-8 rounded-full border-2 border-brand-green border-t-transparent animate-spin"></div>
+          <div className="flex-1 flex flex-col h-screen items-center justify-center text-[11px] text-gray-500 gap-3 bg-[#06070a]">
+            <div className="w-6 h-6 rounded-full border-2 border-[#0df294] border-t-transparent animate-spin"></div>
             Loading Trading Panel...
           </div>
         }
       >
         <TradingContent />
       </Suspense>
+
+      {/* Bottom status bar specifically for trading */}
+      <TradingFooter />
     </div>
   );
 }
