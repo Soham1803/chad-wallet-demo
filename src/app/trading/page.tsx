@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import TradingHeader from "@/components/TradingHeader";
 import TradingFooter from "@/components/TradingFooter";
 import TrendingTokens from "@/components/TrendingTokens";
@@ -27,7 +27,6 @@ interface PositionItem {
 }
 
 function TradingContent() {
-  const searchParams = useSearchParams();
   const router = useRouter();
 
   // Active token selection state
@@ -64,36 +63,72 @@ function TradingContent() {
     }
   ]);
 
-  // Synergize URL parameter queries with selectedToken state
+  // Synergize URL parameter queries with selectedToken state on initial load
   useEffect(() => {
-    const tokenQuery = searchParams.get("token");
-    if (!tokenQuery) return;
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tokenQuery = params.get("token");
+      if (!tokenQuery) return;
 
-    // Check if we already have it in liveTokens
-    const match = liveTokens.find(
-      (t) => t.symbol.toUpperCase() === tokenQuery.toUpperCase() || t.mint === tokenQuery
-    );
+      const match = liveTokens.find(
+        (t) => t.symbol.toUpperCase() === tokenQuery.toUpperCase() || t.mint === tokenQuery
+      );
 
-    if (match) {
-      if (selectedToken.mint !== match.mint) {
+      if (match) {
         setSelectedToken(match);
-      }
-    } else {
-      // Fetch details from DexScreener if it's a new token not in the default list
-      let active = true;
-      fetchTokenFullDetails(tokenQuery).then((details) => {
-        if (!active || !details) return;
-        setLiveTokens((prev) => {
-          if (prev.some((t) => t.mint === details.mint)) return prev;
-          return [...prev, details];
+      } else {
+        fetchTokenFullDetails(tokenQuery).then((details) => {
+          if (details) {
+            setLiveTokens((prev) => {
+              if (prev.some((t) => t.mint === details.mint)) return prev;
+              return [...prev, details];
+            });
+            setSelectedToken(details);
+          }
         });
-        setSelectedToken(details);
-      });
-      return () => {
-        active = false;
-      };
+      }
     }
-  }, [searchParams, liveTokens, selectedToken.mint]);
+  }, []);
+
+  // Listen to custom history changes to avoid Next.js Router Suspense flickers
+  useEffect(() => {
+    const handleUrlChange = () => {
+      const params = new URLSearchParams(window.location.search);
+      const tokenQuery = params.get("token");
+      if (!tokenQuery) return;
+
+      const match = liveTokens.find(
+        (t) => t.symbol.toUpperCase() === tokenQuery.toUpperCase() || t.mint === tokenQuery
+      );
+
+      if (match) {
+        if (selectedToken.mint !== match.mint) {
+          setSelectedToken(match);
+        }
+      } else {
+        let active = true;
+        fetchTokenFullDetails(tokenQuery).then((details) => {
+          if (!active || !details) return;
+          setLiveTokens((prev) => {
+            if (prev.some((t) => t.mint === details.mint)) return prev;
+            return [...prev, details];
+          });
+          setSelectedToken(details);
+        });
+        return () => {
+          active = false;
+        };
+      }
+    };
+
+    window.addEventListener("popstate", handleUrlChange);
+    window.addEventListener("urlchange", handleUrlChange);
+
+    return () => {
+      window.removeEventListener("popstate", handleUrlChange);
+      window.removeEventListener("urlchange", handleUrlChange);
+    };
+  }, [liveTokens, selectedToken.mint]);
 
   // Periodic polling for prices and full selected token details
   useEffect(() => {
@@ -157,7 +192,10 @@ function TradingContent() {
 
   const handleSelectToken = (token: TokenDetails) => {
     setSelectedToken(token);
-    router.push(`/trading?token=${token.mint}`);
+    if (typeof window !== "undefined") {
+      window.history.pushState(null, "", `/trading?token=${token.mint}`);
+      window.dispatchEvent(new Event("urlchange"));
+    }
   };
 
   // Execution handler for Buying/Selling swaps
@@ -355,82 +393,61 @@ export default function TradingPage() {
     );
   }
 
-  // If not ready, show the loader
-  if (!ready) {
-    return (
-      <div className="flex flex-col min-h-screen bg-[#06070a] text-foreground font-mono">
-        <TradingHeader />
-        <div className="flex-1 flex flex-col items-center justify-center text-[11px] text-gray-500 gap-3">
-          <div className="w-6 h-6 rounded-full border-2 border-[#0df294] border-t-transparent animate-spin"></div>
-          Loading session...
-        </div>
-      </div>
-    );
-  }
-
-  // If not authenticated, render the access denied / login screen
-  if (!authenticated) {
-    return (
-      <div className="flex flex-col min-h-screen bg-[#06070a] text-foreground font-mono">
-        <TradingHeader />
-
-        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto">
-          {/* Neon Glow Lock Icon */}
-          <div className="relative mb-6">
-            <div className="absolute inset-0 rounded-full bg-rose-500/20 blur-xl animate-pulse"></div>
-            <div className="w-20 h-20 rounded bg-[#0d0e12] border border-rose-500/30 flex items-center justify-center text-rose-500 shadow-lg shadow-rose-500/10 relative">
-              <Lock className="w-8 h-8" />
-            </div>
-          </div>
-
-          <h1 className="text-xl font-extrabold tracking-wider uppercase mb-3 text-gray-200">
-            Access Denied
-          </h1>
-          <p className="text-xs text-gray-500 leading-relaxed mb-8">
-            The trading terminal is secure. You must connect your Solana
-            embedded wallet via Privy to view order books, live charts, and
-            execute trades.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
-            <button
-              onClick={login}
-              className="inline-flex items-center justify-center bg-[#0df294] text-black font-extrabold text-xs px-6 py-2.5 rounded shadow-lg hover:bg-[#0df294]/90 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 cursor-pointer"
-            >
-              Login
-            </button>
-            <button
-              onClick={() => router.push("/")}
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded bg-[#0d0e12] hover:bg-[#161b26] border border-[#161b26] hover:border-gray-700 text-gray-400 hover:text-gray-200 text-xs font-bold transition-all duration-200 cursor-pointer"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              Back to Home
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // If authenticated, show the trading screen
   return (
-    <div className="flex flex-col h-screen bg-[#06070a] text-foreground overflow-hidden">
-      {/* Navigation Header specifically for trading */}
+    <div className="flex flex-col h-screen bg-[#06070a] text-foreground overflow-hidden font-mono">
+      {/* Navigation Header specifically for trading - stays mounted across all ready/auth states */}
       <TradingHeader />
 
-      {/* App router suspense wrapper to prevent static compilation issues with search params */}
-      <Suspense
-        fallback={
-          <div className="flex-1 flex flex-col h-screen items-center justify-center text-[11px] text-gray-500 gap-3 bg-[#06070a]">
+      {/* Main Container - transitions content inside without unmounting root header/footer */}
+      <div className="flex-1 min-h-0 w-full flex flex-col">
+        {!ready ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-[11px] text-gray-500 gap-3 bg-[#06070a]">
             <div className="w-6 h-6 rounded-full border-2 border-[#0df294] border-t-transparent animate-spin"></div>
-            Loading Trading Panel...
+            Loading session...
           </div>
-        }
-      >
-        <TradingContent />
-      </Suspense>
+        ) : !authenticated ? (
+          <div className="flex-1 flex items-center justify-center bg-[#06070a]">
+            <div className="w-full max-w-md p-6 text-center">
+              {/* Neon Glow Lock Icon */}
+              <div className="relative flex justify-center mb-6">
+                <div className="absolute inset-0 rounded-full bg-rose-500/20 blur-xl animate-pulse"></div>
+                <div className="w-20 h-20 rounded bg-[#0d0e12] border border-rose-500/30 flex items-center justify-center text-rose-500 shadow-lg shadow-rose-500/10 relative">
+                  <Lock className="w-8 h-8" />
+                </div>
+              </div>
 
-      {/* Bottom status bar specifically for trading */}
+              <h1 className="text-xl font-extrabold tracking-wider uppercase mb-3 text-gray-200">
+                Access Denied
+              </h1>
+              <p className="text-xs text-gray-500 leading-relaxed mb-8">
+                The trading terminal is secure. You must connect your Solana
+                embedded wallet via Privy to view order books, live charts, and
+                execute trades.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
+                <button
+                  onClick={login}
+                  className="inline-flex items-center justify-center bg-[#0df294] text-black font-extrabold text-xs px-6 py-2.5 rounded shadow-lg hover:bg-[#0df294]/90 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 cursor-pointer"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => router.push("/")}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded bg-[#0d0e12] hover:bg-[#161b26] border border-[#161b26] hover:border-gray-700 text-gray-400 hover:text-gray-200 text-xs font-bold transition-all duration-200 cursor-pointer"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  Back to Home
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <TradingContent />
+        )}
+      </div>
+
+      {/* Bottom status bar specifically for trading - stays mounted */}
       <TradingFooter />
     </div>
   );

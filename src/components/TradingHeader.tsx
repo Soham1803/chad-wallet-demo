@@ -78,8 +78,10 @@ export default function TradingHeader() {
   const handleSelectToken = (token: TokenDetails) => {
     setShowSearchResults(false);
     setSearchQuery("");
-    // Push the token's mint address to load details
-    router.push(`/trading?token=${token.mint}`);
+    if (typeof window !== "undefined") {
+      window.history.pushState(null, "", `/trading?token=${token.mint}`);
+      window.dispatchEvent(new Event("urlchange"));
+    }
   };
 
   const handleCopyAddress = () => {

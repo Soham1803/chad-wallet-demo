@@ -12,6 +12,14 @@ interface TokenChartProps {
 export default function TokenChart({ token }: TokenChartProps) {
   const [activeInterval, setActiveInterval] = useState("15m");
   const [favorite, setFavorite] = useState(false);
+  const [iframeLoading, setIframeLoading] = useState(true);
+
+  // Trigger loading screen on pair address changes
+  useEffect(() => {
+    if (token.pairAddress) {
+      setIframeLoading(true);
+    }
+  }, [token.pairAddress]);
 
   // Overlay state matching the bottom checkbox selectors
   const [mySwaps, setMySwaps] = useState(true);
@@ -216,11 +224,20 @@ export default function TokenChart({ token }: TokenChartProps) {
       {/* 3. The Candle Chart Area */}
       <div className="flex-1 bg-[#06070a] relative min-h-[300px]">
         {token.pairAddress ? (
-          <iframe
-            src={`https://dexscreener.com/solana/${token.pairAddress}?embed=1&theme=dark&trades=0&info=0`}
-            className="absolute inset-0 w-full h-full border-0 bg-[#06070a]"
-            title={`${token.symbol} Candle Chart`}
-          />
+          <>
+            <iframe
+              src={`https://dexscreener.com/solana/${token.pairAddress}?embed=1&theme=dark&trades=0&info=0`}
+              className="absolute inset-0 w-full h-full border-0 bg-[#06070a]"
+              title={`${token.symbol} Candle Chart`}
+              onLoad={() => setIframeLoading(false)}
+            />
+            {iframeLoading && (
+              <div className="absolute inset-0 bg-[#06070a] flex flex-col items-center justify-center gap-3 text-gray-500 font-mono z-10">
+                <RefreshCw className="w-8 h-8 animate-spin text-gray-600" />
+                <span>Loading Chart for {token.symbol}...</span>
+              </div>
+            )}
+          </>
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-gray-500 font-mono">
             <RefreshCw className="w-8 h-8 animate-spin text-gray-600" />
