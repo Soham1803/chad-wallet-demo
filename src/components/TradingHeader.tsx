@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { usePrivy } from "@/components/PrivyProviderWrapper";
 import { Search, Copy, ExternalLink, LogOut, Check, Wallet, Plus } from "lucide-react";
-import { searchSolanaTokens, TokenDetails } from "@/utils/solanaApi";
+import { searchSolanaTokens, TTokenDetails } from "@/utils/solanaApi";
 import Image from "next/image";
 
 export default function TradingHeader() {
@@ -13,7 +13,7 @@ export default function TradingHeader() {
   const { login, logout, authenticated, user, ready } = usePrivy();
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<TokenDetails[]>([]);
+  const [searchResults, setSearchResults] = useState<TTokenDetails[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [showAvatarDropdown, setShowAvatarDropdown] = useState(false);
@@ -75,7 +75,7 @@ export default function TradingHeader() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const handleSelectToken = (token: TokenDetails) => {
+  const handleSelectToken = (token: TTokenDetails) => {
     setShowSearchResults(false);
     setSearchQuery("");
     if (typeof window !== "undefined") {

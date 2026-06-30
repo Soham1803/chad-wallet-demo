@@ -1,26 +1,71 @@
 "use client";
 
 import React, { useState } from "react";
-import { Flame, Star, Coins, BarChart3, Bell, ArrowLeftRight, Columns, LayoutGrid, CheckCircle2 } from "lucide-react";
-import { TokenDetails } from "@/utils/solanaApi";
+import { Flame, Star, Coins, BarChart3, Bell, ArrowLeftRight, Columns, LayoutGrid, CheckCircle2, X, User, SlidersHorizontal, Volume2 } from "lucide-react";
+import { TTokenDetails } from "@/utils/solanaApi";
 import Image from "next/image";
 
-interface TrendingTokensProps {
-  tokens: TokenDetails[];
-  selectedToken: TokenDetails;
-  onSelectToken: (token: TokenDetails) => void;
-}
-
-type MainTab = "alerts" | "tokens" | "leaderboard" | "feed";
-type SubTab = "watchlist" | "crypto" | "trending" | "most_held" | "graduated";
+const mockAlerts = [
+  {
+    id: "alert-1",
+    type: "sell" as const,
+    traderCount: 20,
+    usdValue: "$46.8K",
+    timeStr: "2h",
+    tokenName: "TESTIBULL",
+    tokenPrice: "$2.8M",
+    tokenLogo: "https://cdn.dexscreener.com/cms/images/bf05934beb55942758e6a85cfd2800dc8170b799eec87da9611c769f8ff81b57?width=800&height=800&quality=95&format=auto"
+  },
+  {
+    id: "alert-2",
+    type: "buy" as const,
+    traderCount: 40,
+    usdValue: "$104.4K",
+    timeStr: "2h",
+    tokenName: "TESTIBULL",
+    tokenPrice: "$2.3M",
+    tokenLogo: "https://cdn.dexscreener.com/cms/images/bf05934beb55942758e6a85cfd2800dc8170b799eec87da9611c769f8ff81b57?width=800&height=800&quality=95&format=auto"
+  },
+  {
+    id: "alert-3",
+    type: "buy" as const,
+    traderCount: 20,
+    usdValue: "$42.8K",
+    timeStr: "2h",
+    tokenName: "TESTIBULL",
+    tokenPrice: "$1.3M",
+    tokenLogo: "https://cdn.dexscreener.com/cms/images/bf05934beb55942758e6a85cfd2800dc8170b799eec87da9611c769f8ff81b57?width=800&height=800&quality=95&format=auto"
+  },
+  {
+    id: "alert-4",
+    type: "sell" as const,
+    traderCount: 20,
+    usdValue: "$75.8K",
+    timeStr: "2h",
+    tokenName: "ANSEM",
+    tokenPrice: "$135.3M",
+    tokenLogo: "https://cdn.dexscreener.com/cms/images/A8aHRXC8VPrpfPIF?width=800&height=800&quality=95&format=auto"
+  }
+];
 
 export default function TrendingTokens({
   tokens,
   selectedToken,
   onSelectToken,
-}: TrendingTokensProps) {
-  const [activeTab, setActiveTab] = useState<MainTab>("tokens");
-  const [activeSubTab, setActiveSubTab] = useState<SubTab>("most_held");
+  activeTab,
+  setActiveTab,
+  showClose = false,
+  onClose,
+  showSplitBottom = true,
+  onSplitBottom,
+  showSplitRight = true,
+  onSplitRight
+}: TTrendingTokensProps) {
+  const [localActiveTab, setLocalActiveTab] = useState<string>("tokens");
+  const [activeSubTab, setActiveSubTab] = useState<TSubTab>("most_held");
+
+  const currentTab = activeTab !== undefined ? activeTab : localActiveTab;
+  const changeTab = setActiveTab !== undefined ? setActiveTab : setLocalActiveTab;
 
   // Format market cap helper
   const formatMarketCap = (mcap?: number) => {
@@ -35,7 +80,6 @@ export default function TrendingTokens({
   const formatPrice = (price: number) => {
     if (price === 0) return "$0.00";
     if (price < 0.00001) {
-      // Find number of leading zeros after decimal point
       const str = price.toFixed(10);
       const match = str.match(/\.0+/);
       const leadingZerosCount = match ? match[0].length - 1 : 0;
@@ -51,15 +95,15 @@ export default function TrendingTokens({
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#06070a] border-r border-[#161b26]/80 overflow-hidden select-none font-mono">
+    <div className="flex flex-col h-full bg-[#06070a] overflow-hidden select-none font-mono">
       {/* Top Sidebar Navigation Tabs */}
-      <div className="flex items-center justify-between border-b border-[#161b26]/80 bg-[#0d0e12]/60 px-2 h-11 text-[11px] font-bold text-gray-500">
+      <div className="flex items-center justify-between border-b border-[#161b26]/80 bg-[#0d0e12]/60 px-2 h-11 text-[11px] font-bold text-gray-500 shrink-0">
         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none flex-1">
           {/* Alerts Tab */}
           <button
-            onClick={() => setActiveTab("alerts")}
+            onClick={() => changeTab("alerts")}
             className={`flex items-center gap-1 px-1.5 py-2.5 transition-colors relative cursor-pointer whitespace-nowrap ${
-              activeTab === "alerts" ? "text-white border-b border-white" : "hover:text-gray-300"
+              currentTab === "alerts" ? "text-white border-b border-white" : "hover:text-gray-300"
             }`}
           >
             <Bell className="w-3.5 h-3.5" />
@@ -69,169 +113,242 @@ export default function TrendingTokens({
 
           {/* Tokens Tab */}
           <button
-            onClick={() => setActiveTab("tokens")}
+            onClick={() => changeTab("tokens")}
             className={`flex items-center gap-1 px-1.5 py-2.5 transition-colors cursor-pointer whitespace-nowrap ${
-              activeTab === "tokens" ? "text-white border-b border-white" : "hover:text-gray-300"
+              currentTab === "tokens" ? "text-white border-b border-white" : "hover:text-gray-300"
             }`}
           >
+            <Coins className="w-3.5 h-3.5" />
             Tokens
           </button>
 
           {/* Leaderboard Tab */}
           <button
-            onClick={() => setActiveTab("leaderboard")}
+            onClick={() => changeTab("leaderboard")}
             className={`flex items-center gap-1 px-1.5 py-2.5 transition-colors cursor-pointer whitespace-nowrap ${
-              activeTab === "leaderboard" ? "text-white border-b border-white" : "hover:text-gray-300"
+              currentTab === "leaderboard" ? "text-white border-b border-white" : "hover:text-gray-300"
             }`}
           >
+            <BarChart3 className="w-3.5 h-3.5" />
             Leaderboard
           </button>
 
           {/* Feed Tab */}
           <button
-            onClick={() => setActiveTab("feed")}
+            onClick={() => changeTab("feed")}
             className={`flex items-center gap-1 px-1.5 py-2.5 transition-colors cursor-pointer whitespace-nowrap ${
-              activeTab === "feed" ? "text-white border-b border-white" : "hover:text-gray-300"
+              currentTab === "feed" ? "text-white border-b border-white" : "hover:text-gray-300"
             }`}
           >
+            <ArrowLeftRight className="w-3.5 h-3.5" />
             Feed
           </button>
         </div>
 
-        {/* Collapse Button */}
-        <button className="p-1 text-gray-600 hover:text-gray-400 cursor-pointer text-xs font-mono font-bold shrink-0">
-          &lt;&lt;
-        </button>
+        {/* Close Button / Collapse Indicator */}
+        {showClose ? (
+          <button
+            onClick={onClose}
+            className="p-1 text-gray-500 hover:text-white cursor-pointer transition-colors ml-1"
+            title="Close Split"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        ) : (
+          <button className="p-1 text-gray-600 hover:text-gray-400 cursor-pointer text-xs font-mono font-bold shrink-0">
+            &lt;&lt;
+          </button>
+        )}
       </div>
 
-      {/* Sub tabs / Filter Pills */}
-      <div className="flex items-center gap-1 p-2 bg-[#06070a] border-b border-[#161b26]/50 overflow-x-auto scrollbar-none text-[10px] font-bold text-gray-400">
-        <button
-          onClick={() => setActiveSubTab("watchlist")}
-          className={`px-2 py-1 rounded transition-colors cursor-pointer whitespace-nowrap ${
-            activeSubTab === "watchlist" ? "bg-[#1d2433] text-gray-200" : "hover:bg-[#161b26] hover:text-gray-300"
-          }`}
-        >
-          Watchlist
-        </button>
-        <button
-          onClick={() => setActiveSubTab("crypto")}
-          className={`px-2 py-1 rounded transition-colors cursor-pointer whitespace-nowrap ${
-            activeSubTab === "crypto" ? "bg-[#1d2433] text-gray-200" : "hover:bg-[#161b26] hover:text-gray-300"
-          }`}
-        >
-          Crypto
-        </button>
-        <button
-          onClick={() => setActiveSubTab("trending")}
-          className={`px-2 py-1 rounded transition-colors cursor-pointer whitespace-nowrap ${
-            activeSubTab === "trending" ? "bg-[#1d2433] text-gray-200" : "hover:bg-[#161b26] hover:text-gray-300"
-          }`}
-        >
-          Trending
-        </button>
-        <button
-          onClick={() => setActiveSubTab("most_held")}
-          className={`px-2 py-1 rounded transition-colors cursor-pointer whitespace-nowrap ${
-            activeSubTab === "most_held" ? "bg-[#1d2433] text-gray-200 border border-gray-700/50" : "hover:bg-[#161b26] hover:text-gray-300"
-          }`}
-        >
-          Most held
-        </button>
-        <button
-          onClick={() => setActiveSubTab("graduated")}
-          className={`px-2 py-1 rounded transition-colors cursor-pointer whitespace-nowrap ${
-            activeSubTab === "graduated" ? "bg-[#1d2433] text-gray-200" : "hover:bg-[#161b26] hover:text-gray-300"
-          }`}
-        >
-          Graduated
-        </button>
-      </div>
-
-      {/* Main token list */}
-      <div className="flex-1 overflow-y-auto divide-y divide-[#161b26]/30">
-        {activeTab === "tokens" ? (
-          tokens.length > 0 ? (
-            tokens.map((token) => {
-              const isSelected = token.mint === selectedToken.mint;
-              const isPositive = token.change24h >= 0;
-
-              return (
-                <div
-                  key={token.mint}
-                  onClick={() => onSelectToken(token)}
-                  className={`flex items-center justify-between px-3 py-2 cursor-pointer transition-colors ${
-                    isSelected ? "bg-[#161a24] border-l-2 border-[#0df294]" : "hover:bg-[#0d0e12]/80"
+      {/* Pane Content */}
+      <div className="flex-1 flex flex-col min-h-0">
+        {currentTab === "tokens" ? (
+          <div className="flex flex-col h-full min-h-0">
+            {/* Sub tabs / Filter Pills */}
+            <div className="flex items-center gap-1 p-2 bg-[#06070a] border-b border-[#161b26]/50 overflow-x-auto scrollbar-none text-[10px] font-bold text-gray-400 shrink-0">
+              {(["watchlist", "crypto", "trending", "most_held", "graduated"] as TSubTab[]).map((tabName) => (
+                <button
+                  key={tabName}
+                  onClick={() => setActiveSubTab(tabName)}
+                  className={`px-2 py-1 rounded transition-colors cursor-pointer whitespace-nowrap capitalize ${
+                    activeSubTab === tabName ? "bg-[#1d2433] text-gray-200 border border-gray-700/50" : "hover:bg-[#161b26] hover:text-gray-300"
                   }`}
                 >
-                  {/* Left: Token info */}
-                  <div className="flex items-center gap-2 max-w-[60%]">
-                    {token.logo ? (
-                      <Image
-                        src={token.logo}
-                        alt={token.symbol}
-                        width={32}
-                        height={32}
-                        unoptimized
-                        className="w-8 h-8 rounded-full object-cover shrink-0 select-none"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-600 to-emerald-600 flex items-center justify-center text-[10px] font-black text-white shrink-0">
-                        {token.symbol.substring(0, 2)}
-                      </div>
-                    )}
+                  {tabName.replace("_", " ")}
+                </button>
+              ))}
+            </div>
 
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1">
-                        <span className="font-bold text-xs text-gray-200 truncate">{token.symbol}</span>
-                        {/* Verified badge */}
-                        <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 fill-blue-950 shrink-0" />
-                      </div>
-                      <span className="text-[10px] text-gray-500 block truncate font-mono">
-                        {formatPrice(token.price)}
-                      </span>
-                    </div>
-                  </div>
+            {/* Token List */}
+            <div className="flex-1 overflow-y-auto divide-y divide-[#161b26]/30">
+              {tokens.length > 0 ? (
+                tokens.map((token) => {
+                  const isSelected = token.mint === selectedToken.mint;
+                  const isPositive = token.change24h >= 0;
 
-                  {/* Right: Market cap & Change */}
-                  <div className="text-right">
-                    <div className="text-[11px] font-bold text-gray-300 font-mono">
-                      {formatMarketCap(token.marketCap)}
-                    </div>
+                  return (
                     <div
-                      className={`text-[9px] font-bold font-mono mt-0.5 ${
-                        isPositive ? "text-emerald-500" : "text-rose-500"
+                      key={token.mint}
+                      onClick={() => onSelectToken(token)}
+                      className={`flex items-center justify-between px-3 py-2 cursor-pointer transition-colors ${
+                        isSelected ? "bg-[#161a24] border-l-2 border-[#0df294]" : "hover:bg-[#0d0e12]/80"
                       }`}
                     >
-                      {isPositive ? "▲" : "▼"} {Math.abs(token.change24h).toFixed(2)}%
+                      {/* Left: Token info */}
+                      <div className="flex items-center gap-2 max-w-[60%]">
+                        {token.logo ? (
+                          <Image
+                            src={token.logo}
+                            alt={token.symbol}
+                            width={32}
+                            height={32}
+                            unoptimized
+                            className="w-8 h-8 rounded-full object-cover shrink-0 select-none"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-600 to-emerald-600 flex items-center justify-center text-[10px] font-black text-white shrink-0">
+                            {token.symbol.substring(0, 2)}
+                          </div>
+                        )}
+
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1">
+                            <span className="font-bold text-xs text-gray-200 truncate">{token.symbol}</span>
+                            <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 fill-blue-950 shrink-0" />
+                          </div>
+                          <span className="text-[10px] text-gray-500 block truncate font-mono">
+                            {formatPrice(token.price)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Right: Market cap & Change */}
+                      <div className="text-right">
+                        <div className="text-[11px] font-bold text-gray-300 font-mono">
+                          {formatMarketCap(token.marketCap)}
+                        </div>
+                        <div
+                          className={`text-[9px] font-bold font-mono mt-0.5 ${
+                            isPositive ? "text-emerald-500" : "text-rose-500"
+                          }`}
+                        >
+                          {isPositive ? "▲" : "▼"} {Math.abs(token.change24h).toFixed(2)}%
+                        </div>
+                      </div>
                     </div>
+                  );
+                })
+              ) : (
+                <div className="p-8 text-center text-xs text-gray-600 font-mono">No tokens found.</div>
+              )}
+            </div>
+          </div>
+        ) : currentTab === "alerts" ? (
+          <div className="flex flex-col h-full overflow-hidden min-h-0 bg-[#06070a]">
+            {/* Header filters */}
+            <div className="flex items-center justify-between px-3 py-1.5 bg-[#06070a] border-b border-[#161b26]/30 text-[10px] font-bold text-gray-500 shrink-0">
+              <div className="flex items-center gap-2">
+                <button className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-[#161b26] bg-[#0d0e12] hover:text-gray-300 transition-colors cursor-pointer">
+                  <User className="w-2.5 h-2.5 text-gray-500 mr-1 shrink-0" />
+                  Traders
+                </button>
+                <button className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-[#161b26] bg-[#0d0e12] hover:text-gray-300 transition-colors cursor-pointer">
+                  <SlidersHorizontal className="w-2.5 h-2.5 text-gray-500 mr-1 shrink-0" />
+                  Filters
+                </button>
+              </div>
+              <Volume2 className="w-3 h-3 text-gray-500 hover:text-gray-300 cursor-pointer shrink-0" />
+            </div>
+
+            {/* Scrollable list of alerts */}
+            <div className="flex-1 overflow-y-auto divide-y divide-[#161b26]/20 p-2 space-y-2">
+              {mockAlerts.map((alert) => (
+                <div key={alert.id} className="py-2.5 px-1 flex flex-col gap-1.5 text-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <span className={`w-2 h-2 rounded-full ${alert.type === "buy" ? "bg-[#0df294]" : "bg-rose-500"}`}></span>
+                      <span className="font-bold text-gray-200">
+                        {alert.traderCount} traders <span className={alert.type === "buy" ? "text-[#0df294]" : "text-rose-500"}>{alert.type === "buy" ? "Buy" : "Sell"}</span> {alert.usdValue}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-gray-600 font-mono">{alert.timeStr}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 pl-3.5">
+                    {alert.tokenLogo ? (
+                      <Image
+                        src={alert.tokenLogo}
+                        alt={alert.tokenName}
+                        width={20}
+                        height={20}
+                        unoptimized
+                        className="w-5 h-5 rounded-full object-cover shrink-0"
+                      />
+                    ) : (
+                      <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-cyan-600 to-emerald-600 flex items-center justify-center text-[8px] font-black text-white shrink-0">
+                        {alert.tokenName.substring(0, 2)}
+                      </div>
+                    )}
+                    <span className="text-[10px] text-gray-400 font-mono">
+                      {alert.tokenName} at <span className="text-gray-300 font-bold">{alert.tokenPrice}</span> MC
+                    </span>
                   </div>
                 </div>
-              );
-            })
-          ) : (
-            <div className="p-8 text-center text-xs text-gray-600 font-mono">No tokens found.</div>
-          )
+              ))}
+            </div>
+          </div>
         ) : (
           <div className="p-8 text-center text-xs text-gray-600 font-mono">
-            {activeTab === "alerts" && "No price alerts triggered."}
-            {activeTab === "leaderboard" && "Leaderboard calculations loading..."}
-            {activeTab === "feed" && "No live feed updates yet."}
+            {currentTab === "leaderboard" && "Leaderboard calculations loading..."}
+            {currentTab === "feed" && "No live feed updates yet."}
           </div>
         )}
       </div>
 
       {/* Sidebar bottom panel layout buttons */}
-      <div className="flex border-t border-[#161b26]/80 p-2 bg-[#0d0e12]/40 gap-2 h-11">
-        <button className="flex-1 rounded border border-[#161b26] hover:border-gray-700 bg-[#0d0e12] text-gray-400 hover:text-gray-200 text-[10px] font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
-          <LayoutGrid className="w-3 h-3" />
-          Split bottom
-        </button>
-        <button className="flex-1 rounded border border-[#161b26] hover:border-gray-700 bg-[#0d0e12] text-gray-400 hover:text-gray-200 text-[10px] font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
-          <Columns className="w-3 h-3" />
-          Split right
-        </button>
-      </div>
+      {(showSplitBottom || showSplitRight) && (
+        <div className="flex border-t border-[#161b26]/80 p-2 bg-[#0d0e12]/40 gap-2 h-11 shrink-0">
+          {showSplitBottom && (
+            <button
+              onClick={onSplitBottom}
+              className="flex-1 rounded border border-[#161b26] hover:border-gray-700 bg-[#0d0e12] text-gray-400 hover:text-gray-200 text-[10px] font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <LayoutGrid className="w-3 h-3" />
+              Split bottom
+            </button>
+          )}
+          {showSplitRight && (
+            <button
+              onClick={onSplitRight}
+              className="flex-1 rounded border border-[#161b26] hover:border-gray-700 bg-[#0d0e12] text-gray-400 hover:text-gray-200 text-[10px] font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Columns className="w-3 h-3" />
+              Split right
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
+
+// ============================================================================
+// Types placed at the bottom of the file
+// ============================================================================
+
+type TTrendingTokensProps = {
+  tokens: TTokenDetails[];
+  selectedToken: TTokenDetails;
+  onSelectToken: (token: TTokenDetails) => void;
+  activeTab?: string;
+  setActiveTab?: (tab: string) => void;
+  showClose?: boolean;
+  onClose?: () => void;
+  showSplitBottom?: boolean;
+  onSplitBottom?: () => void;
+  showSplitRight?: boolean;
+  onSplitRight?: () => void;
+};
+
+type TSubTab = "watchlist" | "crypto" | "trending" | "most_held" | "graduated";

@@ -2,22 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { usePrivy } from "@/components/PrivyProviderWrapper";
-import { TokenDetails } from "@/utils/solanaApi";
+import { TTokenDetails } from "@/utils/solanaApi";
 import { Settings, Wallet, Check } from "lucide-react";
 import confetti from "canvas-confetti";
-
-interface SwapWidgetProps {
-  token: TokenDetails;
-  solBalance: number;
-  tokenBalance: number;
-  onTrade: (
-    action: "BUY" | "SELL",
-    token: TokenDetails,
-    amountToken: number,
-    amountSol: number,
-  ) => void;
-  solPrice?: number;
-}
 
 export default function SwapWidget({
   token,
@@ -25,7 +12,7 @@ export default function SwapWidget({
   tokenBalance,
   onTrade,
   solPrice = 142.45,
-}: SwapWidgetProps) {
+}: TSwapWidgetProps) {
   const { login, authenticated, ready } = usePrivy();
   const [activeTab, setActiveTab] = useState<"BUY" | "SELL">("BUY");
   const [amountInput, setAmountInput] = useState("");
@@ -307,3 +294,16 @@ export default function SwapWidget({
     </div>
   );
 }
+
+type TSwapWidgetProps = {
+  token: TTokenDetails;
+  solBalance: number;
+  tokenBalance: number;
+  onTrade: (
+    action: "BUY" | "SELL",
+    token: TTokenDetails,
+    amountToken: number,
+    amountSol: number,
+  ) => void;
+  solPrice?: number;
+};

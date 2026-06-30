@@ -1,26 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { TokenDetails } from "@/utils/solanaApi";
+import { TTokenDetails } from "@/utils/solanaApi";
 import { Heart } from "lucide-react";
 import mockTradersJson from "@/data/mockTraders.json";
 
-interface ActivityFeedProps {
-  token: TokenDetails;
-  solPrice?: number;
-}
-
-interface TraderRow {
-  username: string;
-  avatarColor: string;
-  holdTime: string;
-  amount: number;
-  entryPriceMult: number; // multiplier to base price to calculate entry
-  thesisText?: string;
-  likes: number;
-}
-
-export default function ActivityFeed({ token }: ActivityFeedProps) {
+export default function ActivityFeed({ token }: TActivityFeedProps) {
   const [activeTab, setActiveTab] = useState<"holders" | "swaps" | "thesis">("holders");
   const [thesisOnly, setThesisOnly] = useState(false);
   const [friendsOnly, setFriendsOnly] = useState(false);
@@ -59,7 +44,7 @@ export default function ActivityFeed({ token }: ActivityFeedProps) {
     return num.toLocaleString(undefined, { maximumFractionDigits: 0 });
   };
 
-  const traders: TraderRow[] = mockTradersJson;
+  const traders: TTraderRow[] = mockTradersJson;
 
   // Dynamically calculate holdings based on token price
   const resolvedRows = traders.map((trader) => {
@@ -232,3 +217,18 @@ export default function ActivityFeed({ token }: ActivityFeedProps) {
     </div>
   );
 }
+
+type TActivityFeedProps = {
+  token: TTokenDetails;
+  solPrice?: number;
+};
+
+type TTraderRow = {
+  username: string;
+  avatarColor: string;
+  holdTime: string;
+  amount: number;
+  entryPriceMult: number; // multiplier to base price to calculate entry
+  thesisText?: string;
+  likes: number;
+};

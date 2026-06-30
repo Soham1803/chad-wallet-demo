@@ -1,83 +1,12 @@
-import { TokenTicker } from '@/components/RotatingBanner';
-
-// Custom interface for token details including decimals
-export interface SolanaToken extends TokenTicker {
-  decimals: number;
-}
-
-export interface TokenDetails extends TokenTicker {
-  marketCap?: number;
-  volume24h?: number;
-  liquidity?: number;
-  holders?: number;
-  top10Holding?: number;
-  websites?: { label?: string; url?: string }[];
-  socials?: { type?: string; url?: string }[];
-  txns?: {
-    m5?: { buys?: number; sells?: number };
-    h1?: { buys?: number; sells?: number };
-    h6?: { buys?: number; sells?: number };
-    h24?: { buys?: number; sells?: number };
-  };
-  priceChange?: {
-    m5?: number;
-    h1?: number;
-    h6?: number;
-    h24?: number;
-  };
-  pairAddress?: string;
-  description?: string;
-}
+import { TTokenTicker } from '@/components/RotatingBanner';
 
 const SOL_PRICE = 142.45; // Fallback SOL price if API fails
-
-// Public Solana RPC url fallback
 const PUBLIC_RPC_URL = 'https://api.mainnet-beta.solana.com';
-
-interface DexPair {
-  chainId: string;
-  dexId: string;
-  pairAddress: string;
-  baseToken: {
-    address: string;
-    name: string;
-    symbol: string;
-  };
-  priceUsd: string;
-  priceChange?: {
-    m5?: number;
-    h1?: number;
-    h6?: number;
-    h24?: number;
-  };
-  volume?: {
-    m5?: number;
-    h1?: number;
-    h6?: number;
-    h24?: number;
-  };
-  liquidity?: {
-    usd?: number;
-  };
-  fdv?: number;
-  marketCap?: number;
-  info?: {
-    imageUrl?: string;
-    websites?: { label?: string; url?: string }[];
-    socials?: { type?: string; url?: string }[];
-  };
-  txns?: {
-    m5?: { buys?: number; sells?: number };
-    h1?: { buys?: number; sells?: number };
-    h6?: { buys?: number; sells?: number };
-    h24?: { buys?: number; sells?: number };
-  };
-}
 
 /**
  * Fetch real-time token prices, 24h changes, and details from DexScreener
  */
-export async function fetchRealTokenPrices(currentTokens: SolanaToken[]): Promise<SolanaToken[]> {
+export async function fetchRealTokenPrices(currentTokens: TSolanaToken[]): Promise<TSolanaToken[]> {
   const mints = currentTokens
     .filter((t) => t.symbol !== 'CHAD') // Exclude custom mock CHAD token
     .map((t) => t.mint);
@@ -89,7 +18,7 @@ export async function fetchRealTokenPrices(currentTokens: SolanaToken[]): Promis
 
     if (!data.pairs || !Array.isArray(data.pairs)) return currentTokens;
 
-    const rawPairs = data.pairs as DexPair[];
+    const rawPairs = data.pairs as TDexPair[];
 
     // First map all live tokens from DexScreener
     const updated = currentTokens.map((token) => {
@@ -137,7 +66,7 @@ export async function fetchRealTokenPrices(currentTokens: SolanaToken[]): Promis
 /**
  * Fetch detailed token metrics from DexScreener using mint address
  */
-export async function fetchTokenFullDetails(mint: string): Promise<TokenDetails | null> {
+export async function fetchTokenFullDetails(mint: string): Promise<TTokenDetails | null> {
   if (mint === 'CHADxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx') {
     return {
       symbol: 'CHAD',
@@ -169,7 +98,7 @@ export async function fetchTokenFullDetails(mint: string): Promise<TokenDetails 
 
     if (!data.pairs || !Array.isArray(data.pairs) || data.pairs.length === 0) return null;
 
-    const solPairs = (data.pairs as DexPair[]).filter((p) => p.chainId === 'solana');
+    const solPairs = (data.pairs as TDexPair[]).filter((p) => p.chainId === 'solana');
     if (solPairs.length === 0) return null;
 
     // Pick highest liquidity pair
@@ -216,7 +145,7 @@ export async function fetchTokenFullDetails(mint: string): Promise<TokenDetails 
 /**
  * Search tokens on DexScreener and return the best Solana matches
  */
-export async function searchSolanaTokens(query: string): Promise<TokenDetails[]> {
+export async function searchSolanaTokens(query: string): Promise<TTokenDetails[]> {
   try {
     const res = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${query}`);
     if (!res.ok) throw new Error('DexScreener Search error');
@@ -224,10 +153,10 @@ export async function searchSolanaTokens(query: string): Promise<TokenDetails[]>
 
     if (!data.pairs || !Array.isArray(data.pairs)) return [];
 
-    const solPairs = (data.pairs as DexPair[]).filter((p) => p.chainId === 'solana');
+    const solPairs = (data.pairs as TDexPair[]).filter((p) => p.chainId === 'solana');
     
     // Group pairs by base token address to get unique tokens
-    const uniqueTokens: Record<string, DexPair> = {};
+    const uniqueTokens: Record<string, TDexPair> = {};
     for (const pair of solPairs) {
       const mint = pair.baseToken.address;
       if (!uniqueTokens[mint] || (pair.liquidity?.usd || 0) > (uniqueTokens[mint].liquidity?.usd || 0)) {
@@ -299,55 +228,40 @@ export async function fetchJupiterQuote(
 /**
  * Fetch actual signature transaction history on Solana for a token address
  */
-export interface RealTxHistory {
-  signature: string;
-  slot: number;
-  timeAgo: string;
-  isBuy: boolean;
-  amountSol: number;
-}
-
-interface SolanaTxSignature {
-  signature: string;
-  slot: number;
-  blockTime: number | null;
-}
-
 export async function fetchOnChainSignatures(
   mintAddress: string,
   limit = 8
-): Promise<RealTxHistory[]> {
+): Promise<TRealTxHistory[]> {
   const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || PUBLIC_RPC_URL;
   
-  const addressToQuery = mintAddress === 'So11111111111111111111111111111111111111112' 
-    ? 'Vote111111111111111111111111111111111111111' 
-    : mintAddress === 'CHADxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-    ? 'So11111111111111111111111111111111111111112' 
-    : mintAddress;
-
   try {
-    const response = await fetch(rpcUrl, {
+    const res = await fetch(rpcUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         jsonrpc: '2.0',
-        id: 1,
+        id: 'signatures-fetch',
         method: 'getSignaturesForAddress',
         params: [
-          addressToQuery,
+          mintAddress,
           { limit }
         ]
       })
     });
 
-    if (!response.ok) throw new Error('RPC signature fetch failed');
-    const result = await response.json();
+    if (!res.ok) throw new Error('RPC endpoint returned error status');
+    const data = await res.json();
+    
+    if (data.error) {
+      throw new Error(`RPC JSONRPC Error: ${data.error.message}`);
+    }
 
-    if (!result.result || !Array.isArray(result.result)) return [];
+    if (!data.result || !Array.isArray(data.result)) return [];
 
+    const txSignatures = data.result as TSolanaTxSignature[];
     const now = Math.floor(Date.now() / 1000);
 
-    return (result.result as SolanaTxSignature[]).map((tx) => {
+    return txSignatures.map((tx) => {
       const elapsed = tx.blockTime ? now - tx.blockTime : 10;
       let timeAgo = 'Just now';
       if (elapsed > 59) {
@@ -374,3 +288,89 @@ export async function fetchOnChainSignatures(
     return [];
   }
 }
+
+// ============================================================================
+// Types placed at the bottom of the file
+// ============================================================================
+
+export type TSolanaToken = TTokenTicker & {
+  decimals: number;
+};
+
+export type TTokenDetails = TTokenTicker & {
+  marketCap?: number;
+  volume24h?: number;
+  liquidity?: number;
+  holders?: number;
+  top10Holding?: number;
+  websites?: { label?: string; url?: string }[];
+  socials?: { type?: string; url?: string }[];
+  txns?: {
+    m5?: { buys?: number; sells?: number };
+    h1?: { buys?: number; sells?: number };
+    h6?: { buys?: number; sells?: number };
+    h24?: { buys?: number; sells?: number };
+  };
+  priceChange?: {
+    m5?: number;
+    h1?: number;
+    h6?: number;
+    h24?: number;
+  };
+  pairAddress?: string;
+  description?: string;
+};
+
+export type TDexPair = {
+  chainId: string;
+  dexId: string;
+  pairAddress: string;
+  baseToken: {
+    address: string;
+    name: string;
+    symbol: string;
+  };
+  priceUsd: string;
+  priceChange?: {
+    m5?: number;
+    h1?: number;
+    h6?: number;
+    h24?: number;
+  };
+  volume?: {
+    m5?: number;
+    h1?: number;
+    h6?: number;
+    h24?: number;
+  };
+  liquidity?: {
+    usd?: number;
+  };
+  fdv?: number;
+  marketCap?: number;
+  info?: {
+    imageUrl?: string;
+    websites?: { label?: string; url?: string }[];
+    socials?: { type?: string; url?: string }[];
+  };
+  txns?: {
+    m5?: { buys?: number; sells?: number };
+    h1?: { buys?: number; sells?: number };
+    h6?: { buys?: number; sells?: number };
+    h24?: { buys?: number; sells?: number };
+  };
+};
+
+export type TRealTxHistory = {
+  signature: string;
+  slot: number;
+  timeAgo: string;
+  isBuy: boolean;
+  amountSol: number;
+};
+
+type TSolanaTxSignature = {
+  signature: string;
+  slot: number;
+  blockTime: number | null;
+};

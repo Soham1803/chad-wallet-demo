@@ -9,7 +9,7 @@ import TokenChart from "@/components/TokenChart";
 import ActivityFeed from "@/components/ActivityFeed";
 import SwapWidget from "@/components/SwapWidget";
 import Positions from "@/components/Positions";
-import { fetchTokenFullDetails, TokenDetails } from "@/utils/solanaApi";
+import { fetchTokenFullDetails, TTokenDetails, TDexPair } from "@/utils/solanaApi";
 import { usePrivy } from "@/components/PrivyProviderWrapper";
 import { Lock, ArrowLeft } from "lucide-react";
 import useResponsive from "@/hooks/useResponsive";
@@ -17,23 +17,35 @@ import { AppleAppLink, GooglePlayAppLink } from "@/components/MobileAppLinks";
 
 import defaultTokensJson from "@/data/defaultTokens.json";
 
-const DEFAULT_TOKENS: TokenDetails[] = defaultTokensJson as TokenDetails[];
-
-interface PositionItem {
-  token: TokenDetails;
-  balance: number;
-  entryPrice: number;
-  currentPrice: number;
-}
+const DEFAULT_TOKENS: TTokenDetails[] = defaultTokensJson as TTokenDetails[];
 
 function TradingContent() {
   const router = useRouter();
 
-  // Active token selection state
-  const [selectedToken, setSelectedToken] = useState<TokenDetails>(DEFAULT_TOKENS[0]);
+  // Multi-column sidebar grid state
+  const [sidebarColumns, setSidebarColumns] = useState<TSidebarColumn[]>([
+    { id: "col-1", activeTabTop: "tokens", activeTabBottom: null },
+  ]);
+
+  // Active token selection state (lazy initialized to read URL parameters on first render)
+  const [selectedToken, setSelectedToken] = useState<TTokenDetails>(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tokenQuery = params.get("token");
+      if (tokenQuery) {
+        const match = DEFAULT_TOKENS.find(
+          (t) =>
+            t.symbol.toUpperCase() === tokenQuery.toUpperCase() ||
+            t.mint === tokenQuery
+        );
+        if (match) return match;
+      }
+    }
+    return DEFAULT_TOKENS[0];
+  });
 
   // Live-updating token values
-  const [liveTokens, setLiveTokens] = useState<TokenDetails[]>(DEFAULT_TOKENS);
+  const [liveTokens, setLiveTokens] = useState<TTokenDetails[]>(DEFAULT_TOKENS);
 
   // Starting mock user balances: 5.5 SOL and 1000 CHAD to demo features instantly
   const [solBalance, setSolBalance] = useState(5.5);
@@ -48,7 +60,7 @@ function TradingContent() {
   const SOL_PRICE = solTokenItem ? solTokenItem.price : 74.28;
 
   // Active positions state
-  const [positions, setPositions] = useState<PositionItem[]>([
+  const [positions, setPositions] = useState<TPositionItem[]>([
     {
       token: DEFAULT_TOKENS[0], // jailstool
       balance: 150000,
@@ -60,10 +72,10 @@ function TradingContent() {
       balance: 450,
       entryPrice: 0.138,
       currentPrice: 0.141,
-    }
+    },
   ]);
 
-  // Synergize URL parameter queries with selectedToken state on initial load
+  // Fetch custom token details asynchronously if not present in the default list on load
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
@@ -71,12 +83,12 @@ function TradingContent() {
       if (!tokenQuery) return;
 
       const match = liveTokens.find(
-        (t) => t.symbol.toUpperCase() === tokenQuery.toUpperCase() || t.mint === tokenQuery
+        (t) =>
+          t.symbol.toUpperCase() === tokenQuery.toUpperCase() ||
+          t.mint === tokenQuery
       );
 
-      if (match) {
-        setSelectedToken(match);
-      } else {
+      if (!match) {
         fetchTokenFullDetails(tokenQuery).then((details) => {
           if (details) {
             setLiveTokens((prev) => {
@@ -98,7 +110,9 @@ function TradingContent() {
       if (!tokenQuery) return;
 
       const match = liveTokens.find(
-        (t) => t.symbol.toUpperCase() === tokenQuery.toUpperCase() || t.mint === tokenQuery
+        (t) =>
+          t.symbol.toUpperCase() === tokenQuery.toUpperCase() ||
+          t.mint === tokenQuery,
       );
 
       if (match) {
@@ -140,26 +154,38 @@ function TradingContent() {
 
       if (basicMints.length > 0) {
         try {
-          const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${basicMints.join(",")}`);
+          const res = await fetch(
+            `https://api.dexscreener.com/latest/dex/tokens/${basicMints.join(",")}`,
+          );
           if (res.ok) {
             const data = await res.json();
             if (data.pairs && Array.isArray(data.pairs)) {
               setLiveTokens((prev) => {
                 return prev.map((token) => {
-                  const matchingPairs = data.pairs.filter(
-                    (p: any) => p.chainId === "solana" && p.baseToken.address === token.mint
+                  const matchingPairs = (data.pairs as TDexPair[]).filter(
+                    (p: TDexPair) =>
+                      p.chainId === "solana" &&
+                      p.baseToken.address === token.mint,
                   );
                   if (matchingPairs.length === 0) return token;
 
-                  const bestPair = matchingPairs.reduce((best: any, curr: any) => {
-                    return (curr.liquidity?.usd || 0) > (best.liquidity?.usd || 0) ? curr : best;
-                  }, matchingPairs[0]);
+                  const bestPair = matchingPairs.reduce(
+                    (best: TDexPair, curr: TDexPair) => {
+                      return (curr.liquidity?.usd || 0) >
+                        (best.liquidity?.usd || 0)
+                        ? curr
+                        : best;
+                    },
+                    matchingPairs[0],
+                  );
 
                   return {
                     ...token,
                     price: Number(bestPair.priceUsd) || token.price,
-                    change24h: Number(bestPair.priceChange?.h24) || token.change24h,
-                    marketCap: bestPair.marketCap || bestPair.fdv || token.marketCap,
+                    change24h:
+                      Number(bestPair.priceChange?.h24) || token.change24h,
+                    marketCap:
+                      bestPair.marketCap || bestPair.fdv || token.marketCap,
                     volume24h: bestPair.volume?.h24 || token.volume24h,
                     liquidity: bestPair.liquidity?.usd || token.liquidity,
                   };
@@ -179,7 +205,7 @@ function TradingContent() {
           setSelectedToken(details);
           // Sync it in liveTokens list too
           setLiveTokens((prev) =>
-            prev.map((t) => (t.mint === details.mint ? details : t))
+            prev.map((t) => (t.mint === details.mint ? details : t)),
           );
         }
       }
@@ -190,7 +216,7 @@ function TradingContent() {
     return () => clearInterval(interval);
   }, [selectedToken.mint]);
 
-  const handleSelectToken = (token: TokenDetails) => {
+  const handleSelectToken = (token: TTokenDetails) => {
     setSelectedToken(token);
     if (typeof window !== "undefined") {
       window.history.pushState(null, "", `/trading?token=${token.mint}`);
@@ -201,7 +227,7 @@ function TradingContent() {
   // Execution handler for Buying/Selling swaps
   const handleTradeExecution = (
     action: "BUY" | "SELL",
-    tradeToken: TokenDetails,
+    tradeToken: TTokenDetails,
     amountToken: number,
     amountSol: number,
   ) => {
@@ -286,7 +312,7 @@ function TradingContent() {
   };
 
   // Close position entirely
-  const handleClosePosition = (closeToken: TokenDetails) => {
+  const handleClosePosition = (closeToken: TTokenDetails) => {
     const exist = positions.find((p) => p.token.mint === closeToken.mint);
     if (!exist) return;
 
@@ -296,13 +322,103 @@ function TradingContent() {
 
   return (
     <div className="flex-1 flex overflow-hidden min-h-0 items-stretch bg-[#06070a] border-t border-[#161b26]/60">
-      {/* Column 1: Left Pane - Token Lists (280px width) */}
-      <div className="w-[280px] h-full shrink-0 flex flex-col">
-        <TrendingTokens
-          tokens={liveTokens}
-          selectedToken={selectedToken}
-          onSelectToken={handleSelectToken}
-        />
+      {/* Column 1: Left Pane - Sidebar Columns Grid */}
+      <div className="h-full shrink-0 flex items-stretch">
+        {sidebarColumns.map((col, index) => (
+          <div
+            key={col.id}
+            className="w-[360px] h-full shrink-0 flex flex-col border-r border-[#161b26]/80 bg-[#06070a] min-h-0"
+          >
+            {/* Top Pane */}
+            <div
+              className={`${col.activeTabBottom ? "h-1/2" : "h-full"} flex flex-col min-h-0`}
+            >
+              <TrendingTokens
+                tokens={liveTokens}
+                selectedToken={selectedToken}
+                onSelectToken={handleSelectToken}
+                activeTab={col.activeTabTop}
+                setActiveTab={(tab) => {
+                  setSidebarColumns((prev) =>
+                    prev.map((c) =>
+                      c.id === col.id ? { ...c, activeTabTop: tab } : c,
+                    ),
+                  );
+                }}
+                showClose={sidebarColumns.length > 1}
+                onClose={() => {
+                  setSidebarColumns((prev) =>
+                    prev.filter((c) => c.id !== col.id),
+                  );
+                }}
+                showSplitBottom={col.activeTabBottom === null}
+                onSplitBottom={() => {
+                  setSidebarColumns((prev) =>
+                    prev.map((c) =>
+                      c.id === col.id ? { ...c, activeTabBottom: "alerts" } : c,
+                    ),
+                  );
+                }}
+                showSplitRight={
+                  col.activeTabBottom === null && sidebarColumns.length < 2
+                }
+                onSplitRight={() => {
+                  const newId = `col-${Date.now()}`;
+                  setSidebarColumns((prev) => [
+                    ...prev.slice(0, index + 1),
+                    {
+                      id: newId,
+                      activeTabTop: "tokens",
+                      activeTabBottom: null,
+                    },
+                    ...prev.slice(index + 1),
+                  ]);
+                }}
+              />
+            </div>
+
+            {/* Bottom Pane */}
+            {col.activeTabBottom && (
+              <div className="h-1/2 border-t border-[#161b26]/80 flex flex-col min-h-0">
+                <TrendingTokens
+                  tokens={liveTokens}
+                  selectedToken={selectedToken}
+                  onSelectToken={handleSelectToken}
+                  activeTab={col.activeTabBottom}
+                  setActiveTab={(tab) => {
+                    setSidebarColumns((prev) =>
+                      prev.map((c) =>
+                        c.id === col.id ? { ...c, activeTabBottom: tab } : c,
+                      ),
+                    );
+                  }}
+                  showClose={true}
+                  onClose={() => {
+                    setSidebarColumns((prev) =>
+                      prev.map((c) =>
+                        c.id === col.id ? { ...c, activeTabBottom: null } : c,
+                      ),
+                    );
+                  }}
+                  showSplitBottom={false}
+                  showSplitRight={sidebarColumns.length < 2}
+                  onSplitRight={() => {
+                    const newId = `col-${Date.now()}`;
+                    setSidebarColumns((prev) => [
+                      ...prev.slice(0, index + 1),
+                      {
+                        id: newId,
+                        activeTabTop: "tokens",
+                        activeTabBottom: null,
+                      },
+                      ...prev.slice(index + 1),
+                    ]);
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        ))}
       </div>
 
       {/* Column 2: Middle Pane - Charts & Live Activity (flex-1 width) */}
@@ -315,8 +431,8 @@ function TradingContent() {
         </div>
       </div>
 
-      {/* Column 3: Right Pane - Swap terminal & Positions/About (320px width) */}
-      <div className="w-[320px] h-full shrink-0 flex flex-col border-l border-[#161b26]/80 overflow-y-auto bg-[#06070a] p-3 gap-3 scrollbar-none">
+      {/* Column 3: Right Pane - Swap terminal & Positions/About (360px width) */}
+      <div className="w-[360px] h-full shrink-0 flex flex-col border-l border-[#161b26]/80 overflow-y-auto bg-[#06070a] p-3 gap-3 scrollbar-none">
         <SwapWidget
           token={selectedToken}
           solBalance={solBalance}
@@ -368,8 +484,9 @@ export default function TradingPage() {
             Desktop Only
           </h1>
           <p className="text-xs text-gray-500 leading-relaxed mb-8">
-            The fomo.family trading terminal is optimized for desktop trading layouts. Please
-            switch to a desktop browser or download our mobile app.
+            The fomo.family trading terminal is optimized for desktop trading
+            layouts. Please switch to a desktop browser or download our mobile
+            app.
           </p>
 
           <div className="bg-[#0d0e12] border border-[#161b26] rounded p-5 w-full flex flex-col items-center gap-4">
@@ -452,3 +569,20 @@ export default function TradingPage() {
     </div>
   );
 }
+
+// ============================================================================
+// Types placed at the bottom of the file
+// ============================================================================
+
+type TPositionItem = {
+  token: TTokenDetails;
+  balance: number;
+  entryPrice: number;
+  currentPrice: number;
+};
+
+type TSidebarColumn = {
+  id: string;
+  activeTabTop: string;
+  activeTabBottom: string | null;
+};

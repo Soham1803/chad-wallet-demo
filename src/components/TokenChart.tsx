@@ -1,15 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { TokenDetails } from "@/utils/solanaApi";
+import { TTokenDetails } from "@/utils/solanaApi";
 import { Globe, Send, Search, Star, Maximize2, Camera, Undo2, Redo2, RefreshCw } from "lucide-react";
 import Image from "next/image";
 
-interface TokenChartProps {
-  token: TokenDetails;
-}
-
-export default function TokenChart({ token }: TokenChartProps) {
+export default function TokenChart({ token }: TTokenChartProps) {
   const [activeInterval, setActiveInterval] = useState("15m");
   const [favorite, setFavorite] = useState(false);
   const [iframeLoading, setIframeLoading] = useState(true);
@@ -300,3 +296,7 @@ export default function TokenChart({ token }: TokenChartProps) {
     </div>
   );
 }
+
+type TTokenChartProps = {
+  token: TTokenDetails;
+};

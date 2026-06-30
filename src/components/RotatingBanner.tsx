@@ -6,28 +6,14 @@ import { fetchRealTokenPrices } from "@/utils/solanaApi";
 import { usePrivy } from "@/components/PrivyProviderWrapper";
 import DEFAULT_TOKENS_JSON from "@/data/rotatingTokens.json";
 
-export interface TokenTicker {
-  symbol: string;
-  name: string;
-  price: number;
-  change24h: number;
-  mint: string;
-  decimals: number;
-  logo?: string;
-}
-
-const DEFAULT_TOKENS: TokenTicker[] = DEFAULT_TOKENS_JSON;
-
-interface RotatingBannerProps {
-  reverse?: boolean;
-}
+const DEFAULT_TOKENS: TTokenTicker[] = DEFAULT_TOKENS_JSON;
 
 export default function RotatingBanner({
   reverse = false,
-}: RotatingBannerProps) {
+}: TRotatingBannerProps) {
   const router = useRouter();
   const { login, authenticated, ready } = usePrivy();
-  const [tokens, setTokens] = useState<TokenTicker[]>(DEFAULT_TOKENS);
+  const [tokens, setTokens] = useState<TTokenTicker[]>(DEFAULT_TOKENS);
 
   // Fetch real-time token prices and changes from DexScreener
   useEffect(() => {
@@ -123,3 +109,17 @@ export default function RotatingBanner({
     </div>
   );
 }
+
+export type TTokenTicker = {
+  symbol: string;
+  name: string;
+  price: number;
+  change24h: number;
+  mint: string;
+  decimals: number;
+  logo?: string;
+};
+
+type TRotatingBannerProps = {
+  reverse?: boolean;
+};

@@ -1,32 +1,18 @@
 "use client";
 
 import React, { useState } from "react";
-import { TokenDetails } from "@/utils/solanaApi";
+import { TTokenDetails } from "@/utils/solanaApi";
 import { ChevronDown, Share2, X, Sparkles } from "lucide-react";
 import Image from "next/image";
-
-interface PositionItem {
-  token: TokenDetails;
-  balance: number;
-  entryPrice: number;
-  currentPrice: number;
-}
-
-interface PositionsProps {
-  positions: PositionItem[];
-  onClosePosition: (token: TokenDetails) => void;
-  solPrice?: number;
-  selectedToken: TokenDetails;
-}
 
 export default function Positions({
   positions,
   onClosePosition,
   solPrice = 142.45,
   selectedToken,
-}: PositionsProps) {
+}: TPositionsProps) {
   const [activeFilter, setActiveFilter] = useState<"open" | "closed">("open");
-  const [sharePosition, setSharePosition] = useState<PositionItem | null>(null);
+  const [sharePosition, setSharePosition] = useState<TPositionItem | null>(null);
 
   // --- Calculate Stats for the "About Token" Panel ---
   const priceChange = selectedToken.priceChange || {};
@@ -312,3 +298,17 @@ export default function Positions({
     </div>
   );
 }
+
+type TPositionItem = {
+  token: TTokenDetails;
+  balance: number;
+  entryPrice: number;
+  currentPrice: number;
+};
+
+type TPositionsProps = {
+  positions: TPositionItem[];
+  onClosePosition: (token: TTokenDetails) => void;
+  solPrice?: number;
+  selectedToken: TTokenDetails;
+};
