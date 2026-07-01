@@ -8,7 +8,7 @@ export default function AccessDenied({ onLogin }: TAccessDeniedProps) {
   const router = useRouter();
 
   return (
-    <div className="flex-1 flex items-center justify-center bg-[#010204]">
+    <div className="flex-1 flex items-center justify-center bg-background">
       <div className="w-full max-w-md p-6 text-center">
         {/* Neon Glow Lock Icon */}
         <div className="relative flex justify-center mb-6">

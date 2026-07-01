@@ -97,7 +97,7 @@ export default function SwapWidget({
   const estimatedValue = getEstimatedReturn();
 
   return (
-    <div className="bg-[#010204] border border-[#161b26]/80 rounded p-4 flex flex-col font-mono text-xs select-none">
+    <div className="bg-background border border-[#161b26]/80 rounded p-4 flex flex-col font-mono text-xs select-none">
       {/* 1. Buy/Sell Tabs */}
       <div className="flex bg-[#0d0e12] rounded p-0.5 border border-[#161b26]/50 mb-4 h-10">
         <button

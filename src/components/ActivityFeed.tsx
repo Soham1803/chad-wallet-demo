@@ -87,7 +87,7 @@ export default function ActivityFeed({ token }: TActivityFeedProps) {
   });
 
   return (
-    <div className="flex flex-col bg-[#010204] border-t border-[#161b26]/85 overflow-hidden h-full font-mono text-xs select-none">
+    <div className="flex flex-col bg-background border-t border-[#161b26]/85 overflow-hidden h-full font-mono text-xs select-none">
       {/* 1. Header Tab selectors */}
       <div className="flex items-center justify-between border-b border-[#161b26]/80 px-3 bg-[#0d0e12]/20 h-10 text-[11px] font-bold text-gray-500">
         <div className="flex items-center gap-4">
@@ -150,7 +150,7 @@ export default function ActivityFeed({ token }: TActivityFeedProps) {
       </div>
 
       {/* 3. Table Rows */}
-      <div className="flex-1 overflow-y-auto divide-y divide-[#161b26]/20 bg-[#010204]">
+      <div className="flex-1 overflow-y-auto divide-y divide-[#161b26]/20 bg-background">
         {filteredRows.length > 0 ? (
           filteredRows.map((row, idx) => {
             const isPositive = row.pnlPct >= 0;

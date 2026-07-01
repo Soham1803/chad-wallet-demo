@@ -59,7 +59,8 @@ export default function TrendingTokens({
   showSplitBottom = true,
   onSplitBottom,
   showSplitRight = true,
-  onSplitRight
+  onSplitRight,
+  onCollapse
 }: TTrendingTokensProps) {
   const [localActiveTab, setLocalActiveTab] = useState<string>("tokens");
   const [activeSubTab, setActiveSubTab] = useState<TSubTab>("most_held");
@@ -181,7 +182,7 @@ export default function TrendingTokens({
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#030712] overflow-hidden select-none font-mono">
+    <div className="flex flex-col h-full bg-background overflow-hidden select-none font-mono">
       {/* Top Sidebar Navigation Tabs */}
       <div className="flex items-center justify-between border-b border-[#161b26]/80 bg-[#0d0e12]/60 px-2 h-11 text-[11px] font-bold text-gray-500 shrink-0">
         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none flex-1">
@@ -241,7 +242,11 @@ export default function TrendingTokens({
             <X className="w-3.5 h-3.5" />
           </button>
         ) : (
-          <button className="p-1 text-gray-600 hover:text-gray-400 cursor-pointer text-xs font-mono font-bold shrink-0">
+          <button
+            onClick={onCollapse}
+            className="p-1 text-gray-600 hover:text-gray-400 cursor-pointer text-xs font-mono font-bold shrink-0"
+            title="Collapse Sidebar"
+          >
             &lt;&lt;
           </button>
         )}
@@ -252,7 +257,7 @@ export default function TrendingTokens({
         {currentTab === "tokens" ? (
           <div className="flex flex-col h-full min-h-0">
             {/* Sub tabs / Filter Pills */}
-            <div className="flex items-center gap-1 p-2 bg-[#030712] border-b border-[#161b26]/50 overflow-x-auto scrollbar-none text-[10px] font-bold text-gray-400 shrink-0">
+            <div className="flex items-center gap-1 p-2 bg-background border-b border-[#161b26]/50 overflow-x-auto scrollbar-none text-[10px] font-bold text-gray-400 shrink-0">
               {(["watchlist", "crypto", "trending", "most_held", "graduated"] as TSubTab[]).map((tabName) => (
                 <button
                   key={tabName}
@@ -336,9 +341,9 @@ export default function TrendingTokens({
             </div>
           </div>
         ) : currentTab === "alerts" ? (
-          <div className="flex flex-col h-full overflow-hidden min-h-0 bg-[#030712]">
+          <div className="flex flex-col h-full overflow-hidden min-h-0 bg-background">
             {/* Header filters */}
-            <div className="flex items-center justify-between px-3 py-1.5 bg-[#030712] border-b border-[#161b26]/30 text-[10px] font-bold text-gray-500 shrink-0">
+            <div className="flex items-center justify-between px-3 py-1.5 bg-background border-b border-[#161b26]/30 text-[10px] font-bold text-gray-500 shrink-0">
               <div className="flex items-center gap-2">
                 <button className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-[#161b26] bg-[#0d0e12] hover:text-gray-300 transition-colors cursor-pointer">
                   <User className="w-2.5 h-2.5 text-gray-500 mr-1 shrink-0" />
@@ -557,6 +562,7 @@ type TTrendingTokensProps = {
   onSplitBottom?: () => void;
   showSplitRight?: boolean;
   onSplitRight?: () => void;
+  onCollapse?: () => void;
 };
 
 type TSubTab = "watchlist" | "crypto" | "trending" | "most_held" | "graduated";

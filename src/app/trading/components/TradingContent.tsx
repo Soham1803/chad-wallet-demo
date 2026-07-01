@@ -23,6 +23,7 @@ export default function TradingContent() {
     { id: "col-1", activeTabTop: "tokens", activeTabBottom: null },
   ]);
 
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [cashBalance, setCashBalance] = useState(0.00);
 
@@ -341,87 +342,58 @@ export default function TradingContent() {
   };
 
   return (
-    <div className="flex-1 flex overflow-hidden min-h-0 items-stretch bg-[#010204] border-t border-[#161b26]/60">
+    <div className="flex-1 flex overflow-hidden min-h-0 items-stretch bg-background border-t border-[#161b26]/60">
       {/* Column 1: Left Pane - Sidebar Columns Grid */}
-      <div className="h-full shrink-0 flex items-stretch">
-        {sidebarColumns.map((col, index) => (
-          <div
-            key={col.id}
-            className="w-[360px] h-full shrink-0 flex flex-col border-r border-[#161b26]/80 bg-[#010204] min-h-0"
+      {isSidebarCollapsed ? (
+        <div className="w-10 h-full shrink-0 flex flex-col items-center py-3 border-r border-[#161b26]/80 bg-background select-none font-mono">
+          <button
+            onClick={() => setIsSidebarCollapsed(false)}
+            className="p-1.5 text-gray-500 hover:text-white cursor-pointer hover:bg-[#161b26]/50 rounded transition-all text-xs font-bold font-mono"
+            title="Expand Sidebar"
           >
-            {/* Top Pane */}
+            &gt;&gt;
+          </button>
+        </div>
+      ) : (
+        <div className="h-full shrink-0 flex items-stretch">
+          {sidebarColumns.map((col, index) => (
             <div
-              className={`${col.activeTabBottom ? "h-1/2" : "h-full"} flex flex-col min-h-0`}
+              key={col.id}
+              className="w-[360px] h-full shrink-0 flex flex-col border-r border-[#161b26]/80 bg-background min-h-0"
             >
-              <TrendingTokens
-                tokens={liveTokens}
-                selectedToken={selectedToken}
-                onSelectToken={handleSelectToken}
-                activeTab={col.activeTabTop}
-                setActiveTab={(tab) => {
-                  setSidebarColumns((prev) =>
-                    prev.map((c) =>
-                      c.id === col.id ? { ...c, activeTabTop: tab } : c,
-                    ),
-                  );
-                }}
-                showClose={sidebarColumns.length > 1}
-                onClose={() => {
-                  setSidebarColumns((prev) =>
-                    prev.filter((c) => c.id !== col.id),
-                  );
-                }}
-                showSplitBottom={col.activeTabBottom === null}
-                onSplitBottom={() => {
-                  setSidebarColumns((prev) =>
-                    prev.map((c) =>
-                      c.id === col.id ? { ...c, activeTabBottom: "alerts" } : c,
-                    ),
-                  );
-                }}
-                showSplitRight={
-                  col.activeTabBottom === null && sidebarColumns.length < 2
-                }
-                onSplitRight={() => {
-                  const newId = `col-${Date.now()}`;
-                  setSidebarColumns((prev) => [
-                    ...prev.slice(0, index + 1),
-                    {
-                      id: newId,
-                      activeTabTop: "tokens",
-                      activeTabBottom: null,
-                    },
-                    ...prev.slice(index + 1),
-                  ]);
-                }}
-              />
-            </div>
-
-            {/* Bottom Pane */}
-            {col.activeTabBottom && (
-              <div className="h-1/2 border-t border-[#161b26]/80 flex flex-col min-h-0">
+              {/* Top Pane */}
+              <div
+                className={`${col.activeTabBottom ? "h-1/2" : "h-full"} flex flex-col min-h-0`}
+              >
                 <TrendingTokens
                   tokens={liveTokens}
                   selectedToken={selectedToken}
                   onSelectToken={handleSelectToken}
-                  activeTab={col.activeTabBottom}
+                  activeTab={col.activeTabTop}
                   setActiveTab={(tab) => {
                     setSidebarColumns((prev) =>
                       prev.map((c) =>
-                        c.id === col.id ? { ...c, activeTabBottom: tab } : c,
+                        c.id === col.id ? { ...c, activeTabTop: tab } : c,
                       ),
                     );
                   }}
-                  showClose={true}
+                  showClose={sidebarColumns.length > 1}
                   onClose={() => {
                     setSidebarColumns((prev) =>
+                      prev.filter((c) => c.id !== col.id),
+                    );
+                  }}
+                  showSplitBottom={col.activeTabBottom === null}
+                  onSplitBottom={() => {
+                    setSidebarColumns((prev) =>
                       prev.map((c) =>
-                        c.id === col.id ? { ...c, activeTabBottom: null } : c,
+                        c.id === col.id ? { ...c, activeTabBottom: "alerts" } : c,
                       ),
                     );
                   }}
-                  showSplitBottom={false}
-                  showSplitRight={sidebarColumns.length < 2}
+                  showSplitRight={
+                    col.activeTabBottom === null && sidebarColumns.length < 2
+                  }
                   onSplitRight={() => {
                     const newId = `col-${Date.now()}`;
                     setSidebarColumns((prev) => [
@@ -434,12 +406,55 @@ export default function TradingContent() {
                       ...prev.slice(index + 1),
                     ]);
                   }}
+                  onCollapse={() => setIsSidebarCollapsed(true)}
                 />
               </div>
-            )}
-          </div>
-        ))}
-      </div>
+
+              {/* Bottom Pane */}
+              {col.activeTabBottom && (
+                <div className="h-1/2 border-t border-[#161b26]/80 flex flex-col min-h-0">
+                  <TrendingTokens
+                    tokens={liveTokens}
+                    selectedToken={selectedToken}
+                    onSelectToken={handleSelectToken}
+                    activeTab={col.activeTabBottom}
+                    setActiveTab={(tab) => {
+                      setSidebarColumns((prev) =>
+                        prev.map((c) =>
+                          c.id === col.id ? { ...c, activeTabBottom: tab } : c,
+                        ),
+                      );
+                    }}
+                    showClose={true}
+                    onClose={() => {
+                      setSidebarColumns((prev) =>
+                        prev.map((c) =>
+                          c.id === col.id ? { ...c, activeTabBottom: null } : c,
+                        ),
+                      );
+                    }}
+                    showSplitBottom={false}
+                    showSplitRight={sidebarColumns.length < 2}
+                    onSplitRight={() => {
+                      const newId = `col-${Date.now()}`;
+                      setSidebarColumns((prev) => [
+                        ...prev.slice(0, index + 1),
+                        {
+                          id: newId,
+                          activeTabTop: "tokens",
+                          activeTabBottom: null,
+                        },
+                        ...prev.slice(index + 1),
+                      ]);
+                    }}
+                    onCollapse={() => setIsSidebarCollapsed(true)}
+                  />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Column 2: Middle Pane - Charts & Live Activity OR Profile View */}
       {showProfile ? (
@@ -459,7 +474,7 @@ export default function TradingContent() {
       {showProfile ? (
         <TopTradersSidebar />
       ) : (
-        <div className="w-[360px] h-full shrink-0 flex flex-col border-l border-[#161b26]/80 overflow-y-auto bg-[#010204] p-3 gap-3 scrollbar-none">
+        <div className="w-[360px] h-full shrink-0 flex flex-col border-l border-[#161b26]/80 overflow-y-auto bg-background p-3 gap-3 scrollbar-none">
           <SwapWidget
             token={selectedToken}
             solBalance={solBalance}

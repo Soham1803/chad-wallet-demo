@@ -54,7 +54,7 @@ export default function Positions({
       {/* ============================================================== */}
       {/* 1. About Token Card                                            */}
       {/* ============================================================== */}
-      <div className="bg-[#010204] border border-[#161b26]/80 rounded p-4 flex flex-col gap-3">
+      <div className="bg-background border border-[#161b26]/80 rounded p-4 flex flex-col gap-3">
         <span className="font-bold text-gray-200">About {selectedToken.symbol}</span>
         
         {/* Token Description */}
@@ -137,7 +137,7 @@ export default function Positions({
       {/* ============================================================== */}
       {/* 2. Your Positions Card                                         */}
       {/* ============================================================== */}
-      <div className="bg-[#010204] border border-[#161b26]/80 rounded p-4 flex flex-col gap-3 flex-1 min-h-0">
+      <div className="bg-background border border-[#161b26]/80 rounded p-4 flex flex-col gap-3 flex-1 min-h-0">
         <div className="flex items-center justify-between">
           <span className="font-bold text-gray-200">Your positions</span>
           
@@ -254,7 +254,7 @@ export default function Positions({
             </div>
 
             {/* P&L Poster */}
-            <div className="w-full aspect-[4/5] rounded border border-gray-700 bg-gradient-to-br from-[#010204] to-[#0d0e12] p-5 flex flex-col justify-between relative shadow-2xl overflow-hidden">
+            <div className="w-full aspect-[4/5] rounded border border-gray-700 bg-gradient-to-br from-background to-[#0d0e12] p-5 flex flex-col justify-between relative shadow-2xl overflow-hidden">
               <div className="absolute top-0 right-0 w-36 h-36 bg-[#0df294]/5 rounded-full blur-[40px] -z-10"></div>
               
               <div className="flex justify-between items-start">

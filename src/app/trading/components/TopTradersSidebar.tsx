@@ -23,7 +23,7 @@ const TOP_TRADERS = [
 
 export default function TopTradersSidebar() {
   return (
-    <div className="w-[360px] h-full shrink-0 flex flex-col bg-[#010204] p-4 gap-4 scrollbar-none font-mono border-l border-[#161b26]/80 overflow-y-auto">
+    <div className="w-[360px] h-full shrink-0 flex flex-col bg-background p-4 gap-4 scrollbar-none font-mono border-l border-[#161b26]/80 overflow-y-auto">
       {/* Sidebar Header */}
       <div className="flex items-center justify-between pb-3 border-b border-[#161b26]/80">
         <div className="flex items-center gap-2">
