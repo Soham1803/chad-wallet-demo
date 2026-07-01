@@ -64,6 +64,31 @@ export default function TrendingTokens({
   const [localActiveTab, setLocalActiveTab] = useState<string>("tokens");
   const [activeSubTab, setActiveSubTab] = useState<TSubTab>("most_held");
 
+  const getDisplayTokens = () => {
+    switch (activeSubTab) {
+      case "watchlist":
+        return [];
+      case "crypto":
+        return tokens.filter((t) => t.symbol === "SOL" || t.symbol === "GRASS");
+      case "trending":
+        return [...tokens].sort((a, b) => b.change24h - a.change24h);
+      case "most_held":
+        return [...tokens].sort((a, b) => (b.holders || 0) - (a.holders || 0));
+      case "graduated":
+        return tokens.filter(
+          (t) =>
+            t.symbol === "jailstool" ||
+            t.symbol === "ANSEM" ||
+            t.symbol === "UwU" ||
+            (t.marketCap !== undefined && t.marketCap > 5000000)
+        );
+      default:
+        return tokens;
+    }
+  };
+
+  const displayTokens = getDisplayTokens();
+
   // Rich Hover Tooltip State
   const [hoveredToken, setHoveredToken] = useState<TTokenDetails | null>(null);
   const [hoveredPosition, setHoveredPosition] = useState<{ top: number; left: number } | null>(null);
@@ -243,8 +268,8 @@ export default function TrendingTokens({
 
             {/* Token List */}
             <div className="flex-1 overflow-y-auto divide-y divide-[#161b26]/30 animate-fade-in">
-              {tokens.length > 0 ? (
-                tokens.map((token) => {
+              {displayTokens.length > 0 ? (
+                displayTokens.map((token) => {
                   const isSelected = token.mint === selectedToken.mint;
                   const isPositive = token.change24h >= 0;
 
@@ -303,7 +328,10 @@ export default function TrendingTokens({
                   );
                 })
               ) : (
-                <div className="p-8 text-center text-xs text-gray-600 font-mono">No tokens found.</div>
+                <div className="flex flex-col items-center justify-center h-48 text-[11px] text-gray-500 font-mono select-none">
+                  <span>Your watchlist is empty</span>
+                  <span className="text-[9px] text-gray-600 mt-1.5 font-bold">Star a token to add it here</span>
+                </div>
               )}
             </div>
           </div>
