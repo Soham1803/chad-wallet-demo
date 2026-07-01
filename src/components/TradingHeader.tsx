@@ -281,7 +281,13 @@ export default function TradingHeader() {
                   </button>
 
                   {/* Manage Account */}
-                  <button className="flex items-center gap-2.5 w-full text-left p-2 rounded hover:bg-[#161b26] text-gray-300 transition-colors cursor-pointer">
+                  <button 
+                    onClick={() => {
+                      setShowAvatarDropdown(false);
+                      window.dispatchEvent(new Event("openmanageaccount"));
+                    }}
+                    className="flex items-center gap-2.5 w-full text-left p-2 rounded hover:bg-[#161b26] text-gray-300 transition-colors cursor-pointer"
+                  >
                     <Settings className="w-3.5 h-3.5 text-gray-500" />
                     <span>Manage account</span>
                   </button>
