@@ -96,7 +96,7 @@ export default function Home() {
             className="object-contain h-full"
           />
           {/* Smooth gradient overlay to fade bottom of phone into background */}
-          <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#030712] via-[#030712]/60 to-transparent pointer-events-none"></div>
+          <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#010204] via-[#010204]/60 to-transparent pointer-events-none"></div>
         </div>
         <div className="flex flex-col items-center gap-1 w-full text-center relative -mt-28 md:mt-0 z-10 md:z-0">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold font-roboto leading-snug">

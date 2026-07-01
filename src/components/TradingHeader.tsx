@@ -119,7 +119,7 @@ export default function TradingHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full h-14 px-4 bg-[#06070a] border-b border-[#161b26]/80 flex items-center justify-between select-none">
+    <header className="sticky top-0 z-40 w-full h-14 px-4 bg-[#030712] border-b border-[#161b26]/80 flex items-center justify-between select-none">
       {/* Left: FOMO Text Logo */}
       <Link href="/" className="flex items-center gap-2">
         <span className="font-black text-2xl tracking-tighter text-white hover:text-white/90 transition-colors">
@@ -289,7 +289,7 @@ export default function TradingHeader() {
                   <div className="w-3.5 h-3.5 rounded-full border border-blue-400/80 flex items-center justify-center text-[8px] font-black text-blue-300 select-none font-mono">
                     F
                   </div>
-                  <div className="absolute -bottom-0.5 -right-0.5 bg-blue-500 text-white rounded-full p-0.2 border border-[#06070a] shadow">
+                  <div className="absolute -bottom-0.5 -right-0.5 bg-blue-500 text-white rounded-full p-0.2 border border-[#030712] shadow">
                     <Check className="w-1.5 h-1.5 stroke-[4px]" />
                   </div>
                 </div>

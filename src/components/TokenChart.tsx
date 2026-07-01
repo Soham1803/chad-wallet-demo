@@ -218,7 +218,7 @@ export default function TokenChart({ token }: TTokenChartProps) {
               />
             </div>
             {iframeLoading && (
-              <div className="absolute inset-0 bg-[#06070a]/90 flex flex-col items-center justify-center gap-3 text-gray-500 font-mono z-10">
+              <div className="absolute inset-0 bg-[#010204]/90 flex flex-col items-center justify-center gap-3 text-gray-500 font-mono z-10">
                 <RefreshCw className="w-8 h-8 animate-spin text-gray-600" />
                 <span>Loading Chart for {token.symbol}...</span>
               </div>

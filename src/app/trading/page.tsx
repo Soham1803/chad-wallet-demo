@@ -99,14 +99,14 @@ export default function TradingPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-[#06070a] text-foreground overflow-hidden font-mono">
+    <div className="flex flex-col h-screen bg-[#010204] text-foreground overflow-hidden font-mono">
       {/* Navigation Header specifically for trading - stays mounted across all ready/auth states */}
       <TradingHeader />
 
       {/* Main Container - transitions content inside without unmounting root header/footer */}
       <div className="flex-1 min-h-0 w-full flex flex-col">
         {!ready ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-[11px] text-gray-500 gap-3 bg-[#06070a]">
+          <div className="flex-1 flex flex-col items-center justify-center text-[11px] text-gray-500 gap-3 bg-[#010204]">
             <div className="w-6 h-6 rounded-full border-2 border-[#0df294] border-t-transparent animate-spin"></div>
             Loading session...
           </div>

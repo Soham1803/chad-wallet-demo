@@ -9,7 +9,7 @@ export default function DesktopOnlyWarning() {
   const router = useRouter();
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#06070a] text-foreground font-mono">
+    <div className="flex flex-col min-h-screen bg-[#010204] text-foreground font-mono">
       <TradingHeader />
       <div className="flex-1 flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto">
         <div className="relative mb-8">

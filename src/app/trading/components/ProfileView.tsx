@@ -5,7 +5,7 @@ import { Check, Gift } from "lucide-react";
 
 export default function ProfileView({ cashBalance }: TProfileViewProps) {
   return (
-    <div className="flex-1 h-full flex flex-col bg-[#06070a] overflow-y-auto p-4 gap-4 scrollbar-none font-mono text-gray-300 border-r border-[#161b26]/80 animate-fade-in">
+    <div className="flex-1 h-full flex flex-col bg-[#010204] overflow-y-auto p-4 gap-4 scrollbar-none font-mono text-gray-300 border-r border-[#161b26]/80 animate-fade-in">
       {/* Hero Banner Area */}
       <div className="relative rounded-lg bg-[#0d0e12] border border-[#1d2433] p-5 flex flex-col gap-8 select-none">
         {/* Banner Background mock */}

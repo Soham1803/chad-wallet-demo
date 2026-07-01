@@ -2,9 +2,9 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #030712;
+  --color-background: #010204;
   --color-foreground: #f3f4f6;
-  --color-dark-bg: #030712;
+  --color-dark-bg: #010204;
   --color-dark-card: #080f1e50;
   --color-dark-panel: #0d1527;
   --color-dark-border: #152238;
@@ -58,7 +58,7 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #030712;
+  background: #010204;
 }
 
 ::-webkit-scrollbar-thumb {

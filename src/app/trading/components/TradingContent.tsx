@@ -341,13 +341,13 @@ export default function TradingContent() {
   };
 
   return (
-    <div className="flex-1 flex overflow-hidden min-h-0 items-stretch bg-[#06070a] border-t border-[#161b26]/60">
+    <div className="flex-1 flex overflow-hidden min-h-0 items-stretch bg-[#010204] border-t border-[#161b26]/60">
       {/* Column 1: Left Pane - Sidebar Columns Grid */}
       <div className="h-full shrink-0 flex items-stretch">
         {sidebarColumns.map((col, index) => (
           <div
             key={col.id}
-            className="w-[360px] h-full shrink-0 flex flex-col border-r border-[#161b26]/80 bg-[#06070a] min-h-0"
+            className="w-[360px] h-full shrink-0 flex flex-col border-r border-[#161b26]/80 bg-[#010204] min-h-0"
           >
             {/* Top Pane */}
             <div
@@ -459,7 +459,7 @@ export default function TradingContent() {
       {showProfile ? (
         <TopTradersSidebar />
       ) : (
-        <div className="w-[360px] h-full shrink-0 flex flex-col border-l border-[#161b26]/80 overflow-y-auto bg-[#06070a] p-3 gap-3 scrollbar-none">
+        <div className="w-[360px] h-full shrink-0 flex flex-col border-l border-[#161b26]/80 overflow-y-auto bg-[#010204] p-3 gap-3 scrollbar-none">
           <SwapWidget
             token={selectedToken}
             solBalance={solBalance}

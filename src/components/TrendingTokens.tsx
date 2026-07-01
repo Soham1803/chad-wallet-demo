@@ -181,7 +181,7 @@ export default function TrendingTokens({
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#06070a] overflow-hidden select-none font-mono">
+    <div className="flex flex-col h-full bg-[#030712] overflow-hidden select-none font-mono">
       {/* Top Sidebar Navigation Tabs */}
       <div className="flex items-center justify-between border-b border-[#161b26]/80 bg-[#0d0e12]/60 px-2 h-11 text-[11px] font-bold text-gray-500 shrink-0">
         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none flex-1">
@@ -252,7 +252,7 @@ export default function TrendingTokens({
         {currentTab === "tokens" ? (
           <div className="flex flex-col h-full min-h-0">
             {/* Sub tabs / Filter Pills */}
-            <div className="flex items-center gap-1 p-2 bg-[#06070a] border-b border-[#161b26]/50 overflow-x-auto scrollbar-none text-[10px] font-bold text-gray-400 shrink-0">
+            <div className="flex items-center gap-1 p-2 bg-[#030712] border-b border-[#161b26]/50 overflow-x-auto scrollbar-none text-[10px] font-bold text-gray-400 shrink-0">
               {(["watchlist", "crypto", "trending", "most_held", "graduated"] as TSubTab[]).map((tabName) => (
                 <button
                   key={tabName}
@@ -336,9 +336,9 @@ export default function TrendingTokens({
             </div>
           </div>
         ) : currentTab === "alerts" ? (
-          <div className="flex flex-col h-full overflow-hidden min-h-0 bg-[#06070a]">
+          <div className="flex flex-col h-full overflow-hidden min-h-0 bg-[#030712]">
             {/* Header filters */}
-            <div className="flex items-center justify-between px-3 py-1.5 bg-[#06070a] border-b border-[#161b26]/30 text-[10px] font-bold text-gray-500 shrink-0">
+            <div className="flex items-center justify-between px-3 py-1.5 bg-[#030712] border-b border-[#161b26]/30 text-[10px] font-bold text-gray-500 shrink-0">
               <div className="flex items-center gap-2">
                 <button className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-[#161b26] bg-[#0d0e12] hover:text-gray-300 transition-colors cursor-pointer">
                   <User className="w-2.5 h-2.5 text-gray-500 mr-1 shrink-0" />
