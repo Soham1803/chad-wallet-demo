@@ -12,6 +12,10 @@ import {
   Check,
   Wallet,
   Plus,
+  Settings,
+  User,
+  EyeOff,
+  Gift,
 } from "lucide-react";
 import { searchSolanaTokens, TTokenDetails } from "@/utils/solanaApi";
 import Image from "next/image";
@@ -22,6 +26,7 @@ export default function TradingHeader() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<TTokenDetails[]>([]);
+  const [blurBalances, setBlurBalances] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [showAvatarDropdown, setShowAvatarDropdown] = useState(false);
@@ -214,8 +219,8 @@ export default function TradingHeader() {
       {/* Right: Cash balance, Wallet state & Avatar */}
       <div className="flex items-center gap-4">
         {/* Deposit Cash Area */}
-        <div className="flex flex-col items-end leading-tight text-right">
-          <span className="text-xs font-mono font-bold text-gray-200">
+        <div className="flex flex-col items-end leading-tight text-right select-none">
+          <span className={`text-xs font-mono font-bold text-gray-200 transition-all duration-150 ${blurBalances ? "blur-[4.5px] select-none" : ""}`}>
             $0.00 cash
           </span>
           <button className="text-[10px] font-bold text-[#0df294] hover:underline flex items-center gap-0.5 cursor-pointer">
@@ -229,73 +234,95 @@ export default function TradingHeader() {
           !authenticated ? (
             <button
               onClick={login}
-              className="px-4 py-1.5 rounded bg-[#0df294] text-black text-xs font-bold hover:bg-[#0df294]/90 active:scale-[0.98] transition-all cursor-pointer"
+              className="px-4 py-1.5 rounded bg-[#0df294] text-black text-xs font-bold hover:bg-[#0df294]/90 active:scale-[0.98] transition-all cursor-pointer select-none"
             >
               Connect Wallet
             </button>
           ) : (
-            <div ref={avatarRef} className="relative flex items-center gap-2">
-              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#0d0e12] border border-[#1d2433] rounded text-[11px] font-mono text-gray-300">
-                <span className="text-gray-400 font-bold">$0.00</span>
-                <span className="text-gray-600">--</span>
-              </div>
+            <div 
+              ref={avatarRef}
+              onMouseEnter={() => setShowAvatarDropdown(true)}
+              onMouseLeave={() => setShowAvatarDropdown(false)}
+              className="relative"
+            >
+              {/* Merged Trigger Pill */}
+              <div className="flex items-center bg-[#0d0e12] hover:bg-[#161b26] border border-[#1d2433] rounded-md px-2 py-1 gap-2 cursor-pointer transition-colors duration-150 select-none">
+                {/* Left: Balance block */}
+                <div className={`flex items-center gap-1 text-[11px] font-mono text-gray-300 transition-all duration-150 ${blurBalances ? "blur-[4.5px] select-none" : ""}`}>
+                  <span className="text-gray-200 font-bold">$0.00</span>
+                  <span className="text-gray-600 font-bold">--</span>
+                </div>
 
-              {/* Avatar trigger button */}
-              <button
-                onClick={() => setShowAvatarDropdown(!showAvatarDropdown)}
-                className="w-8 h-8 rounded-full border border-blue-500/80 bg-blue-950 flex items-center justify-center relative cursor-pointer group"
-              >
-                {/* Profile icon placeholder exactly matching FOMO's blue icon */}
-                <div className="w-4 h-4 rounded-full border border-blue-400/80 flex items-center justify-center text-[10px] font-black text-blue-300 select-none font-mono">
-                  F
+                {/* Right: Avatar bubble */}
+                <div className="w-6 h-6 rounded-full border border-blue-500/80 bg-blue-950 flex items-center justify-center relative shrink-0">
+                  <div className="w-3.5 h-3.5 rounded-full border border-blue-400/80 flex items-center justify-center text-[8px] font-black text-blue-300 select-none font-mono">
+                    F
+                  </div>
+                  <div className="absolute -bottom-0.5 -right-0.5 bg-blue-500 text-white rounded-full p-0.2 border border-[#06070a] shadow">
+                    <Check className="w-1.5 h-1.5 stroke-[4px]" />
+                  </div>
                 </div>
-                {/* Small blue checkmark overlay */}
-                <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white rounded-full p-0.5 border border-[#06070a] shadow">
-                  <Check className="w-2.5 h-2.5 stroke-[4px]" />
-                </div>
-              </button>
+              </div>
 
               {/* Avatar Options Dropdown */}
               {showAvatarDropdown && (
-                <div className="absolute top-10 right-0 w-52 bg-[#0d0e12] border border-[#1d2433] rounded shadow-2xl p-2.5 z-50 text-xs text-gray-300 flex flex-col gap-1.5 font-mono">
-                  <div className="px-2 py-1 text-[10px] text-gray-500 uppercase font-bold tracking-wider border-b border-[#161b26]/50">
-                    Wallet Settings
+                <div className="absolute top-[32px] right-0 w-[180px] bg-[#0c0d12] border border-[#1d2433] rounded-lg shadow-2xl p-2 z-50 text-[11px] text-gray-300 flex flex-col gap-1 font-mono transition-all duration-200 animate-fade-in">
+                  
+                  {/* Your Profile */}
+                  <button 
+                    onClick={() => {
+                      setShowAvatarDropdown(false);
+                      window.dispatchEvent(new Event("viewprofile"));
+                    }}
+                    className="flex items-center gap-2.5 w-full text-left p-2 rounded hover:bg-[#161b26] text-gray-300 transition-colors cursor-pointer"
+                  >
+                    <User className="w-3.5 h-3.5 text-gray-500" />
+                    <span>Your profile</span>
+                  </button>
+
+                  {/* Manage Account */}
+                  <button className="flex items-center gap-2.5 w-full text-left p-2 rounded hover:bg-[#161b26] text-gray-300 transition-colors cursor-pointer">
+                    <Settings className="w-3.5 h-3.5 text-gray-500" />
+                    <span>Manage account</span>
+                  </button>
+
+                  {/* Blur Balances */}
+                  <div className="flex items-center justify-between w-full p-2 rounded hover:bg-[#161b26] text-gray-300 transition-colors select-none">
+                    <div className="flex items-center gap-2.5">
+                      <EyeOff className="w-3.5 h-3.5 text-gray-500" />
+                      <span>Blur balances</span>
+                    </div>
+                    {/* Tiny Switch */}
+                    <button 
+                      onClick={() => setBlurBalances(!blurBalances)}
+                      className={`w-7 h-4 rounded-full p-0.5 transition-colors duration-200 focus:outline-none cursor-pointer flex items-center ${
+                        blurBalances ? "bg-[#0df294]" : "bg-gray-800"
+                      }`}
+                    >
+                      <div 
+                        className={`w-3 h-3 rounded-full bg-white shadow-sm transform transition-transform duration-200 ${
+                          blurBalances ? "translate-x-3" : "translate-x-0"
+                        }`}
+                      />
+                    </button>
                   </div>
-                  <button
-                    onClick={handleCopyAddress}
-                    className="flex items-center justify-between w-full text-left p-2 rounded hover:bg-[#161b26] transition-colors"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Copy className="w-3.5 h-3.5 text-gray-400" />
-                      {formatAddress(activeWallet || "")}
-                    </span>
-                    {copied ? (
-                      <span className="text-[10px] text-[#0df294] font-bold">
-                        Copied!
-                      </span>
-                    ) : (
-                      <span className="text-[10px] text-gray-600">Copy</span>
-                    )}
+
+                  {/* Referrals */}
+                  <button className="flex items-center gap-2.5 w-full text-left p-2 rounded hover:bg-[#161b26] text-gray-300 transition-colors cursor-pointer">
+                    <Gift className="w-3.5 h-3.5 text-gray-500" />
+                    <span>Referrals</span>
                   </button>
-                  <a
-                    href={`https://solscan.io/account/${activeWallet}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 w-full p-2 rounded hover:bg-[#161b26] transition-colors"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
-                    View on Solscan
-                  </a>
-                  <button className="flex items-center gap-2 w-full text-left p-2 rounded hover:bg-[#161b26] transition-colors">
-                    <Wallet className="w-3.5 h-3.5 text-[#0df294]" />
-                    Withdraw SOL
-                  </button>
+
+                  {/* Divider */}
+                  <div className="border-t border-[#1d2433] my-1"></div>
+
+                  {/* Log Out */}
                   <button
                     onClick={logout}
-                    className="flex items-center gap-2 w-full text-left p-2 rounded hover:bg-[#161b26]/60 text-rose-400 hover:text-rose-300 hover:bg-rose-950/20 transition-colors border-t border-[#161b26]/50 pt-2"
+                    className="flex items-center gap-2.5 w-full text-left p-2 rounded hover:bg-rose-950/20 text-rose-500 hover:text-rose-400 transition-colors cursor-pointer"
                   >
                     <LogOut className="w-3.5 h-3.5" />
-                    Disconnect Wallet
+                    <span>Log out</span>
                   </button>
                 </div>
               )}
