@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Flame, Star, Coins, BarChart3, Bell, ArrowLeftRight, Columns, LayoutGrid, CheckCircle2, X, User, SlidersHorizontal, Volume2 } from "lucide-react";
 import { TTokenDetails } from "@/utils/solanaApi";
 import Image from "next/image";
@@ -64,6 +64,12 @@ export default function TrendingTokens({
   const [localActiveTab, setLocalActiveTab] = useState<string>("tokens");
   const [activeSubTab, setActiveSubTab] = useState<TSubTab>("most_held");
 
+  // Rich Hover Tooltip State
+  const [hoveredToken, setHoveredToken] = useState<TTokenDetails | null>(null);
+  const [hoveredPosition, setHoveredPosition] = useState<{ top: number; left: number } | null>(null);
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+  const leaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const currentTab = activeTab !== undefined ? activeTab : localActiveTab;
   const changeTab = setActiveTab !== undefined ? setActiveTab : setLocalActiveTab;
 
@@ -92,6 +98,61 @@ export default function TrendingTokens({
       minimumFractionDigits: price < 0.01 ? 6 : 2,
       maximumFractionDigits: price < 0.01 ? 6 : 3,
     })}`;
+  };
+
+  // Tooltip helper formatters
+  const formatTooltipVolume = (vol?: number) => {
+    if (!vol) return "$0";
+    if (vol >= 1e6) return `$${(vol / 1e6).toFixed(0)}M`;
+    if (vol >= 1e3) return `$${(vol / 1e3).toFixed(0)}K`;
+    return `$${vol.toFixed(0)}`;
+  };
+
+  const formatTooltipHolders = (holders?: number) => {
+    if (!holders) return "0";
+    if (holders >= 1e3) return `${(holders / 1e3).toFixed(0)}K`;
+    return holders.toLocaleString();
+  };
+
+  // Hover handlers to allow mouse over tooltip itself
+  const handleMouseEnter = (e: React.MouseEvent, token: TTokenDetails) => {
+    if (leaveTimeoutRef.current) {
+      clearTimeout(leaveTimeoutRef.current);
+      leaveTimeoutRef.current = null;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    setHoveredToken(token);
+    setHoveredPosition({
+      top: Math.max(10, Math.min(window.innerHeight - 200, rect.top - 20)),
+      left: rect.right + 8
+    });
+  };
+
+  const handleMouseLeave = () => {
+    leaveTimeoutRef.current = setTimeout(() => {
+      setHoveredToken(null);
+      setHoveredPosition(null);
+    }, 300);
+  };
+
+  const handleTooltipMouseEnter = () => {
+    if (leaveTimeoutRef.current) {
+      clearTimeout(leaveTimeoutRef.current);
+      leaveTimeoutRef.current = null;
+    }
+  };
+
+  const handleTooltipMouseLeave = () => {
+    setHoveredToken(null);
+    setHoveredPosition(null);
+  };
+
+  const handleCopyContract = (address: string) => {
+    navigator.clipboard.writeText(address);
+    setCopiedAddress(address);
+    setTimeout(() => {
+      setCopiedAddress(null);
+    }, 2000);
   };
 
   return (
@@ -181,7 +242,7 @@ export default function TrendingTokens({
             </div>
 
             {/* Token List */}
-            <div className="flex-1 overflow-y-auto divide-y divide-[#161b26]/30">
+            <div className="flex-1 overflow-y-auto divide-y divide-[#161b26]/30 animate-fade-in">
               {tokens.length > 0 ? (
                 tokens.map((token) => {
                   const isSelected = token.mint === selectedToken.mint;
@@ -191,7 +252,9 @@ export default function TrendingTokens({
                     <div
                       key={token.mint}
                       onClick={() => onSelectToken(token)}
-                      className={`flex items-center justify-between px-3 py-2 cursor-pointer transition-colors ${
+                      onMouseEnter={(e) => handleMouseEnter(e, token)}
+                      onMouseLeave={handleMouseLeave}
+                      className={`flex items-center justify-between px-3 py-2 cursor-pointer transition-colors relative ${
                         isSelected ? "bg-[#161a24] border-l-2 border-[#0df294]" : "hover:bg-[#0d0e12]/80"
                       }`}
                     >
@@ -263,39 +326,62 @@ export default function TrendingTokens({
 
             {/* Scrollable list of alerts */}
             <div className="flex-1 overflow-y-auto divide-y divide-[#161b26]/20 p-2 space-y-2">
-              {mockAlerts.map((alert) => (
-                <div key={alert.id} className="py-2.5 px-1 flex flex-col gap-1.5 text-xs">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <span className={`w-2 h-2 rounded-full ${alert.type === "buy" ? "bg-[#0df294]" : "bg-rose-500"}`}></span>
-                      <span className="font-bold text-gray-200">
-                        {alert.traderCount} traders <span className={alert.type === "buy" ? "text-[#0df294]" : "text-rose-500"}>{alert.type === "buy" ? "Buy" : "Sell"}</span> {alert.usdValue}
+              {mockAlerts.map((alert) => {
+                // Find matching token details or build a fallback representation
+                const alertToken = tokens.find(t => t.symbol.toUpperCase() === alert.tokenName.toUpperCase()) || {
+                  symbol: alert.tokenName,
+                  name: alert.tokenName,
+                  price: 0.0019,
+                  change24h: alert.type === "buy" ? 105.73 : -15.4,
+                  mint: alert.tokenName === "TESTIBULL" ? "2kcdBw85q4qMVCjUkEynTnZ3bGBbeCqZRDRNLpeWpump" : "9cRCN9...TGpump",
+                  decimals: 9,
+                  logo: alert.tokenLogo || "",
+                  marketCap: alert.tokenPrice.includes("M") ? parseFloat(alert.tokenPrice.replace("$", "").replace("M", "")) * 1e6 : 1800000,
+                  volume24h: 1000000,
+                  holders: 1000,
+                  top10Holding: 27.33,
+                  description: `Live transaction alerts for ${alert.tokenName}. Multi-trader transaction feed.`
+                };
+
+                return (
+                  <div
+                    key={alert.id}
+                    onMouseEnter={(e) => handleMouseEnter(e, alertToken)}
+                    onMouseLeave={handleMouseLeave}
+                    className="py-2.5 px-2 flex flex-col gap-1.5 text-xs hover:bg-[#0d0e12]/60 cursor-pointer rounded transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <span className={`w-2 h-2 rounded-full ${alert.type === "buy" ? "bg-[#0df294]" : "bg-rose-500"}`}></span>
+                        <span className="font-bold text-gray-200">
+                          {alert.traderCount} traders <span className={alert.type === "buy" ? "text-[#0df294]" : "text-rose-500"}>{alert.type === "buy" ? "Buy" : "Sell"}</span> {alert.usdValue}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-gray-600 font-mono">{alert.timeStr}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 pl-3.5">
+                      {alert.tokenLogo ? (
+                        <Image
+                          src={alert.tokenLogo}
+                          alt={alert.tokenName}
+                          width={20}
+                          height={20}
+                          unoptimized
+                          className="w-5 h-5 rounded-full object-cover shrink-0"
+                        />
+                      ) : (
+                        <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-cyan-600 to-emerald-600 flex items-center justify-center text-[8px] font-black text-white shrink-0">
+                          {alert.tokenName.substring(0, 2)}
+                        </div>
+                      )}
+                      <span className="text-[10px] text-gray-400 font-mono">
+                        {alert.tokenName} at <span className="text-gray-300 font-bold">{alert.tokenPrice}</span> MC
                       </span>
                     </div>
-                    <span className="text-[10px] text-gray-600 font-mono">{alert.timeStr}</span>
                   </div>
-                  
-                  <div className="flex items-center gap-2 pl-3.5">
-                    {alert.tokenLogo ? (
-                      <Image
-                        src={alert.tokenLogo}
-                        alt={alert.tokenName}
-                        width={20}
-                        height={20}
-                        unoptimized
-                        className="w-5 h-5 rounded-full object-cover shrink-0"
-                      />
-                    ) : (
-                      <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-cyan-600 to-emerald-600 flex items-center justify-center text-[8px] font-black text-white shrink-0">
-                        {alert.tokenName.substring(0, 2)}
-                      </div>
-                    )}
-                    <span className="text-[10px] text-gray-400 font-mono">
-                      {alert.tokenName} at <span className="text-gray-300 font-bold">{alert.tokenPrice}</span> MC
-                    </span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         ) : (
@@ -327,6 +413,100 @@ export default function TrendingTokens({
               Split right
             </button>
           )}
+        </div>
+      )}
+
+      {/* Viewport Overlay Rich Hover Tooltip */}
+      {hoveredToken && hoveredPosition && (
+        <div
+          onMouseEnter={handleTooltipMouseEnter}
+          onMouseLeave={handleTooltipMouseLeave}
+          style={{
+            position: "fixed",
+            top: `${hoveredPosition.top}px`,
+            left: `${hoveredPosition.left}px`,
+            zIndex: 9999,
+          }}
+          className="w-[260px] bg-[#0c0d12] border border-[#1d2433] rounded-lg p-3.5 shadow-2xl shadow-black font-mono text-[11px] text-gray-400 select-none pointer-events-auto transition-opacity duration-150 animate-fade-in"
+        >
+          {/* Header Row */}
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex items-center gap-2">
+              {hoveredToken.logo ? (
+                <Image
+                  src={hoveredToken.logo}
+                  alt={hoveredToken.symbol}
+                  width={32}
+                  height={32}
+                  unoptimized
+                  className="w-8 h-8 rounded-full object-cover shrink-0"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-600 to-emerald-600 flex items-center justify-center text-[10px] font-black text-white shrink-0">
+                  {hoveredToken.symbol.substring(0, 2)}
+                </div>
+              )}
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-1">
+                  <span className="font-bold text-gray-200 text-xs">{hoveredToken.symbol}</span>
+                  <span className="text-[8px] px-1 rounded bg-gray-900 border border-gray-800 text-gray-500 shrink-0 scale-90 origin-left">SOL</span>
+                </div>
+                <span className="text-[9px] text-gray-500 block truncate max-w-[80px]">{hoveredToken.name || hoveredToken.symbol}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <div className="text-right shrink-0">
+                <div className="font-bold text-gray-200 text-xs">{formatMarketCap(hoveredToken.marketCap)}</div>
+                <div className={`text-[9px] font-bold mt-0.5 ${hoveredToken.change24h >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
+                  {hoveredToken.change24h >= 0 ? "▲" : "▼"} {Math.abs(hoveredToken.change24h).toFixed(2)}%
+                </div>
+              </div>
+              <button className="text-gray-600 hover:text-yellow-500 transition-colors cursor-pointer shrink-0">
+                <Star className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Dashed separator */}
+          <div className="border-t border-dashed border-[#1d2433] my-2"></div>
+
+          {/* Key Statistics */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500">Volume 24hr</span>
+              <span className="text-gray-200 font-bold">{formatTooltipVolume(hoveredToken.volume24h || (hoveredToken.marketCap ? hoveredToken.marketCap * 0.45 : 45000))}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500">Holders</span>
+              <span className="text-gray-200 font-bold">{formatTooltipHolders(hoveredToken.holders || (hoveredToken.marketCap ? Math.floor(Math.sqrt(hoveredToken.marketCap) * 12) : 950))}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500">Top 10 holding</span>
+              <span className="text-gray-200 font-bold">{(hoveredToken.top10Holding || 27.33).toFixed(2)}%</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500">Contract</span>
+              <div className="flex items-center gap-1 font-mono text-[10px]">
+                <span className="text-gray-400 select-all">{hoveredToken.mint ? `${hoveredToken.mint.substring(0, 6)}...${hoveredToken.mint.slice(-6)}` : "N/A"}</span>
+                {hoveredToken.mint && (
+                  copiedAddress === hoveredToken.mint ? (
+                    <CheckCircle2 className="w-3 h-3 text-[#0df294]" />
+                  ) : (
+                    <button 
+                      onClick={() => handleCopyContract(hoveredToken.mint)}
+                      className="p-0.5 hover:text-white text-gray-500 transition-colors cursor-pointer shrink-0"
+                      title="Copy Contract Address"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                      </svg>
+                    </button>
+                  )
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

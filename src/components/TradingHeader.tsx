@@ -4,7 +4,15 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { usePrivy } from "@/components/PrivyProviderWrapper";
-import { Search, Copy, ExternalLink, LogOut, Check, Wallet, Plus } from "lucide-react";
+import {
+  Search,
+  Copy,
+  ExternalLink,
+  LogOut,
+  Check,
+  Wallet,
+  Plus,
+} from "lucide-react";
 import { searchSolanaTokens, TTokenDetails } from "@/utils/solanaApi";
 import Image from "next/image";
 
@@ -108,7 +116,7 @@ export default function TradingHeader() {
       {/* Left: FOMO Text Logo */}
       <Link href="/" className="flex items-center gap-2">
         <span className="font-black text-2xl tracking-tighter text-white hover:text-white/90 transition-colors">
-          fomo
+          ChadWallet
         </span>
       </Link>
 
@@ -168,7 +176,9 @@ export default function TradingHeader() {
                       )}
                       <div>
                         <div className="flex items-center gap-1">
-                          <span className="font-bold text-sm text-gray-200">{result.symbol}</span>
+                          <span className="font-bold text-sm text-gray-200">
+                            {result.symbol}
+                          </span>
                           <span className="text-[9px] text-gray-500 truncate max-w-[150px]">
                             {result.name}
                           </span>
@@ -181,10 +191,16 @@ export default function TradingHeader() {
 
                     <div className="text-right">
                       <div className="text-xs font-mono font-bold text-gray-200">
-                        ${result.price < 0.001 ? result.price.toFixed(6) : result.price.toFixed(3)}
+                        $
+                        {result.price < 0.001
+                          ? result.price.toFixed(6)
+                          : result.price.toFixed(3)}
                       </div>
-                      <div className={`text-[10px] font-mono ${result.change24h >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
-                        {result.change24h >= 0 ? "+" : ""}{result.change24h.toFixed(2)}%
+                      <div
+                        className={`text-[10px] font-mono ${result.change24h >= 0 ? "text-emerald-500" : "text-rose-500"}`}
+                      >
+                        {result.change24h >= 0 ? "+" : ""}
+                        {result.change24h.toFixed(2)}%
                       </div>
                     </div>
                   </div>
@@ -199,7 +215,9 @@ export default function TradingHeader() {
       <div className="flex items-center gap-4">
         {/* Deposit Cash Area */}
         <div className="flex flex-col items-end leading-tight text-right">
-          <span className="text-xs font-mono font-bold text-gray-200">$0.00 cash</span>
+          <span className="text-xs font-mono font-bold text-gray-200">
+            $0.00 cash
+          </span>
           <button className="text-[10px] font-bold text-[#0df294] hover:underline flex items-center gap-0.5 cursor-pointer">
             <Plus className="w-3 h-3" />
             Deposit more
@@ -252,7 +270,9 @@ export default function TradingHeader() {
                       {formatAddress(activeWallet || "")}
                     </span>
                     {copied ? (
-                      <span className="text-[10px] text-[#0df294] font-bold">Copied!</span>
+                      <span className="text-[10px] text-[#0df294] font-bold">
+                        Copied!
+                      </span>
                     ) : (
                       <span className="text-[10px] text-gray-600">Copy</span>
                     )}
