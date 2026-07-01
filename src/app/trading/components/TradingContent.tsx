@@ -236,6 +236,25 @@ export default function TradingContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedToken.mint]);
 
+  // Dynamically update the browser tab title based on selected token or profile view
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      if (showProfile) {
+        document.title = "Profile | ChadWallet";
+      } else if (selectedToken) {
+        const formatMCap = (mcap?: number) => {
+          if (!mcap) return "0";
+          if (mcap >= 1e9) return `${(mcap / 1e9).toFixed(1)}B`;
+          if (mcap >= 1e6) return `${(mcap / 1e6).toFixed(1)}M`;
+          if (mcap >= 1e3) return `${(mcap / 1e3).toFixed(1)}K`;
+          return mcap.toFixed(0);
+        };
+        const mcapStr = formatMCap(selectedToken.marketCap);
+        document.title = `${mcapStr} MC | ${selectedToken.symbol.toUpperCase()} | ChadWallet`;
+      }
+    }
+  }, [selectedToken, showProfile]);
+
   const handleSelectToken = (token: TTokenDetails) => {
     setSelectedToken(token);
     setShowProfile(false);
