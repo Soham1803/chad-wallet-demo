@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { TTokenDetails } from "@/utils/solanaApi";
 import { Heart } from "lucide-react";
 import mockTradersJson from "@/data/mockTraders.json";
@@ -9,6 +9,17 @@ export default function ActivityFeed({ token }: TActivityFeedProps) {
   const [activeTab, setActiveTab] = useState<"holders" | "swaps" | "thesis">("holders");
   const [thesisOnly, setThesisOnly] = useState(false);
   const [friendsOnly, setFriendsOnly] = useState(false);
+
+  const [minSizeThreshold, setMinSizeThreshold] = useState(0);
+
+  useEffect(() => {
+    const handleFilterChange = (e: Event) => {
+      const customEvent = e as CustomEvent<number>;
+      setMinSizeThreshold(customEvent.detail ?? 0);
+    };
+    window.addEventListener("minfilterchange", handleFilterChange);
+    return () => window.removeEventListener("minfilterchange", handleFilterChange);
+  }, []);
 
   // Custom zero subscript price formatter
   const formatSubscriptPrice = (price: number) => {
@@ -67,7 +78,10 @@ export default function ActivityFeed({ token }: TActivityFeedProps) {
   // Filter rows based on tabs/checkboxes
   const filteredRows = resolvedRows.filter((row) => {
     if (activeTab === "thesis" || thesisOnly) {
-      return !!row.thesisText;
+      if (!row.thesisText) return false;
+    }
+    if (minSizeThreshold > 0) {
+      if (row.positionValue < minSizeThreshold) return false;
     }
     return true;
   });

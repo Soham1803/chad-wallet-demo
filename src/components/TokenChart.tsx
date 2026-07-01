@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { TTokenDetails } from "@/utils/solanaApi";
-import { Globe, Send, Search, Star, Maximize2, Camera, Undo2, Redo2, RefreshCw } from "lucide-react";
+import { Globe, Send, Search, Star, Maximize2, Camera, Undo2, Redo2, RefreshCw, Check, Filter } from "lucide-react";
 import Image from "next/image";
 
 export default function TokenChart({ token }: TTokenChartProps) {
@@ -22,6 +22,33 @@ export default function TokenChart({ token }: TTokenChartProps) {
   const [thesis, setThesis] = useState(true);
   const [friendsOnly, setFriendsOnly] = useState(false);
   const [minSize, setMinSize] = useState(false);
+
+  const [minSizeOption, setMinSizeOption] = useState(">$1K");
+  const [customMinSize, setCustomMinSize] = useState("");
+  const [showMinSizeDropdown, setShowMinSizeDropdown] = useState(false);
+  const minSizeRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (minSizeRef.current && !minSizeRef.current.contains(e.target as Node)) {
+        setShowMinSizeDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
+  useEffect(() => {
+    let threshold = 0;
+    if (minSize) {
+      if (minSizeOption === ">$1K") threshold = 1000;
+      else if (minSizeOption === ">$5K") threshold = 5000;
+      else if (minSizeOption === ">$10K") threshold = 10000;
+      else if (minSizeOption === "Custom") threshold = parseFloat(customMinSize) || 0;
+    }
+    const event = new CustomEvent("minfilterchange", { detail: threshold });
+    window.dispatchEvent(event);
+  }, [minSize, minSizeOption, customMinSize]);
 
   // Format numbers to compact strings (e.g. $1M, $65.6K)
   const formatCompact = (num?: number, isCurrency = true) => {
@@ -274,15 +301,65 @@ export default function TokenChart({ token }: TTokenChartProps) {
             />
             Friends only
           </label>
-          <label className="flex items-center gap-1.5 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={minSize}
-              onChange={(e) => setMinSize(e.target.checked)}
-              className="w-3 h-3 rounded bg-transparent border-gray-700 checked:bg-[#0df294]"
-            />
-            Min size (&gt;$1K)
-          </label>
+          <div ref={minSizeRef} className="relative flex items-center">
+            <button 
+              onClick={() => setShowMinSizeDropdown(!showMinSizeDropdown)}
+              className={`hover:text-white cursor-pointer select-none font-bold flex items-center gap-1.5 transition-colors ${
+                minSize ? "text-[#0df294]" : "text-gray-400"
+              }`}
+            >
+              <Filter className="w-3.5 h-3.5" />
+              <span>Min size ({minSizeOption === "Custom" ? `$${customMinSize || '0'}` : minSizeOption})</span>
+            </button>
+
+            {showMinSizeDropdown && (
+              <div className="absolute left-0 bottom-full mb-2 w-32 bg-[#0c0d12] border border-[#1d2433] rounded-xl shadow-xl p-1.5 z-[9999] flex flex-col font-mono text-[10px] text-left text-gray-300 select-none animate-fade-in">
+                {[
+                  { label: "All", value: "All" },
+                  { label: ">$1K", value: ">$1K" },
+                  { label: ">$5K", value: ">$5K" },
+                  { label: ">$10K", value: ">$10K" }
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => {
+                      setMinSizeOption(opt.value);
+                      setMinSize(opt.value !== "All");
+                      setShowMinSizeDropdown(false);
+                    }}
+                    className="flex items-center justify-between px-2 py-1.5 hover:bg-[#161b26] rounded-lg text-left cursor-pointer transition-colors"
+                  >
+                    <span>{opt.label}</span>
+                    {minSizeOption === opt.value && (
+                      <Check className="w-3 h-3 text-[#0df294]" />
+                    )}
+                  </button>
+                ))}
+
+                {/* Custom option */}
+                <div className="border-t border-[#1d2433]/50 my-1"></div>
+                
+                <div className="flex items-center gap-1 px-2 py-1.5 hover:bg-[#161b26] rounded-lg transition-colors group">
+                  <span className="text-gray-500 font-bold">$</span>
+                  <input
+                    type="number"
+                    value={customMinSize}
+                    onChange={(e) => {
+                      setCustomMinSize(e.target.value);
+                      setMinSizeOption("Custom");
+                      setMinSize(true);
+                    }}
+                    placeholder="Custom"
+                    className="bg-transparent border-none text-white text-[10px] focus:outline-none w-full placeholder:text-gray-600 font-bold"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  {minSizeOption === "Custom" && (
+                    <Check className="w-3 h-3 text-[#0df294] shrink-0" />
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Auto / Log controls */}
