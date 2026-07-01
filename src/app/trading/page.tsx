@@ -688,7 +688,7 @@ function TradingContent() {
           <div className="flex-1 min-h-0">
             <TokenChart token={selectedToken} />
           </div>
-          <div className="h-[320px] shrink-0 border-t border-[#161b26]/80">
+          <div className="h-[250px] shrink-0 border-t border-[#161b26]/80">
             <ActivityFeed token={selectedToken} solPrice={SOL_PRICE} />
           </div>
         </div>

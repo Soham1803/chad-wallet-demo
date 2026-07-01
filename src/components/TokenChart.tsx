@@ -2,11 +2,10 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { TTokenDetails } from "@/utils/solanaApi";
-import { Globe, Send, Search, Star, Maximize2, Camera, Undo2, Redo2, RefreshCw, Check, Filter } from "lucide-react";
+import { Globe, Send, Search, Star, RefreshCw, Check, Filter } from "lucide-react";
 import Image from "next/image";
 
 export default function TokenChart({ token }: TTokenChartProps) {
-  const [activeInterval, setActiveInterval] = useState("15m");
   const [favorite, setFavorite] = useState(false);
   const [iframeLoading, setIframeLoading] = useState(true);
 
@@ -92,9 +91,9 @@ export default function TokenChart({ token }: TTokenChartProps) {
   const websiteUrl = token.websites?.[0]?.url;
 
   return (
-    <div className="w-full h-full bg-[#06070a] flex flex-col overflow-hidden select-none font-mono text-xs">
+    <div className="w-full h-full bg-transparent flex flex-col overflow-hidden select-none font-mono text-xs">
       {/* 1. Top Detail Panel Grid */}
-      <div className="flex items-center justify-between border-b border-[#161b26]/80 p-3 bg-[#0d0e12]/30 flex-wrap gap-3">
+      <div className="flex items-center justify-between p-3 bg-transparent flex-wrap gap-3">
         {/* Token badge identity */}
         <div className="flex items-center gap-2">
           {token.logo ? (
@@ -202,60 +201,24 @@ export default function TokenChart({ token }: TTokenChartProps) {
         </div>
       </div>
 
-      {/* 2. Sub Chart Header Controls */}
-      <div className="flex items-center justify-between px-3 h-9 border-b border-[#161b26]/50 bg-[#0d0e12]/20 font-bold text-gray-500 text-[11px]">
-        <div className="flex items-center gap-3 overflow-x-auto scrollbar-none">
-          {/* Time intervals */}
-          <div className="flex items-center gap-1.5 border-r border-[#161b26]/80 pr-3">
-            {["1m", "5m", "15m", "1h", "4h", "1d"].map((interval) => (
-              <button
-                key={interval}
-                onClick={() => setActiveInterval(interval)}
-                className={`px-1.5 py-0.5 rounded cursor-pointer ${
-                  activeInterval === interval ? "bg-[#1d2433] text-[#0df294]" : "hover:text-gray-300"
-                }`}
-              >
-                {interval}
-              </button>
-            ))}
-          </div>
-
-          {/* Pricing style toggle */}
-          <button className="text-gray-400 hover:text-gray-200 cursor-pointer">Price / MCap</button>
-          <button className="text-gray-400 hover:text-gray-200 flex items-center gap-1 cursor-pointer">
-            Indicators
-          </button>
-        </div>
-
-        {/* Extra actions */}
-        <div className="flex items-center gap-2">
-          <button className="p-1 hover:text-gray-300 cursor-pointer">
-            <Undo2 className="w-3.5 h-3.5" />
-          </button>
-          <button className="p-1 hover:text-gray-300 cursor-pointer">
-            <Redo2 className="w-3.5 h-3.5" />
-          </button>
-          <button className="p-1 hover:text-gray-300 cursor-pointer">
-            <Maximize2 className="w-3.5 h-3.5" />
-          </button>
-          <button className="p-1 hover:text-gray-300 cursor-pointer">
-            <Camera className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
-
       {/* 3. The Candle Chart Area */}
-      <div className="flex-1 bg-[#06070a] relative min-h-[300px]">
+      <div className="flex-1 bg-transparent relative min-h-[300px] overflow-hidden">
         {token.pairAddress ? (
           <>
-            <iframe
-              src={`https://dexscreener.com/solana/${token.pairAddress}?embed=1&theme=dark&trades=0&info=0`}
-              className="absolute inset-0 w-full h-full border-0 bg-[#06070a]"
-              title={`${token.symbol} Candle Chart`}
-              onLoad={() => setIframeLoading(false)}
-            />
+            <div className="absolute inset-0 overflow-hidden bg-transparent">
+              <iframe
+                src={`https://dexscreener.com/solana/${token.pairAddress}?embed=1&theme=dark&trades=0&info=0&chartOnly=1`}
+                className="absolute top-0 left-0 w-full border-0 bg-transparent"
+                style={{
+                  height: "calc(100% + 40px)", // Push the 40px dexscreener footer out of the container boundary
+                  pointerEvents: "auto",
+                }}
+                title={`${token.symbol} Candle Chart`}
+                onLoad={() => setIframeLoading(false)}
+              />
+            </div>
             {iframeLoading && (
-              <div className="absolute inset-0 bg-[#06070a] flex flex-col items-center justify-center gap-3 text-gray-500 font-mono z-10">
+              <div className="absolute inset-0 bg-[#06070a]/90 flex flex-col items-center justify-center gap-3 text-gray-500 font-mono z-10">
                 <RefreshCw className="w-8 h-8 animate-spin text-gray-600" />
                 <span>Loading Chart for {token.symbol}...</span>
               </div>
@@ -270,7 +233,7 @@ export default function TokenChart({ token }: TTokenChartProps) {
       </div>
 
       {/* 4. Bottom overlays */}
-      <div className="flex items-center justify-between border-t border-[#161b26]/80 px-3 h-10 bg-[#0d0e12]/30 text-[10px] text-gray-500 font-bold">
+      <div className="flex items-center justify-between px-3 h-10 bg-transparent text-[10px] text-gray-500 font-bold">
         {/* Overlay Checkboxes */}
         <div className="flex items-center gap-4">
           <span className="text-gray-400">Chart overlays</span>
