@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { TTokenDetails } from "@/utils/solanaApi";
 import { Globe, Send, Search, Star, Maximize2, Camera, Undo2, Redo2, RefreshCw } from "lucide-react";
 import Image from "next/image";
@@ -11,11 +11,11 @@ export default function TokenChart({ token }: TTokenChartProps) {
   const [iframeLoading, setIframeLoading] = useState(true);
 
   // Trigger loading screen on pair address changes
-  useEffect(() => {
-    if (token.pairAddress) {
-      setIframeLoading(true);
-    }
-  }, [token.pairAddress]);
+  const [prevPairAddress, setPrevPairAddress] = useState(token.pairAddress);
+  if (token.pairAddress !== prevPairAddress) {
+    setPrevPairAddress(token.pairAddress);
+    setIframeLoading(true);
+  }
 
   // Overlay state matching the bottom checkbox selectors
   const [mySwaps, setMySwaps] = useState(true);

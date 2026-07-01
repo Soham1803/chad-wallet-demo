@@ -2,15 +2,11 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { usePrivy } from "@/components/PrivyProviderWrapper";
 import {
   Search,
-  Copy,
-  ExternalLink,
   LogOut,
   Check,
-  Wallet,
   Plus,
   Settings,
   User,
@@ -21,8 +17,7 @@ import { searchSolanaTokens, TTokenDetails } from "@/utils/solanaApi";
 import Image from "next/image";
 
 export default function TradingHeader() {
-  const router = useRouter();
-  const { login, logout, authenticated, user, ready } = usePrivy();
+  const { login, logout, authenticated, ready } = usePrivy();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<TTokenDetails[]>([]);
@@ -30,19 +25,13 @@ export default function TradingHeader() {
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [showAvatarDropdown, setShowAvatarDropdown] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   const searchRef = useRef<HTMLDivElement>(null);
   const avatarRef = useRef<HTMLDivElement>(null);
 
-  const activeWallet = user?.wallet?.address;
   const displayedResults = searchQuery.trim() ? searchResults : [];
 
-  // Format wallet address for display
-  const formatAddress = (address: string) => {
-    if (!address) return "";
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  };
+
 
   // Debounced token search
   useEffect(() => {
@@ -97,13 +86,7 @@ export default function TradingHeader() {
     }
   };
 
-  const handleCopyAddress = () => {
-    if (activeWallet) {
-      navigator.clipboard.writeText(activeWallet);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
+
 
   const handlePaste = async () => {
     try {
@@ -314,7 +297,13 @@ export default function TradingHeader() {
                   </div>
 
                   {/* Referrals */}
-                  <button className="flex items-center gap-2.5 w-full text-left p-2 rounded hover:bg-[#161b26] text-gray-300 transition-colors cursor-pointer">
+                  <button 
+                    onClick={() => {
+                      setShowAvatarDropdown(false);
+                      window.dispatchEvent(new Event("openreferrals"));
+                    }}
+                    className="flex items-center gap-2.5 w-full text-left p-2 rounded hover:bg-[#161b26] text-gray-300 transition-colors cursor-pointer"
+                  >
                     <Gift className="w-3.5 h-3.5 text-gray-500" />
                     <span>Referrals</span>
                   </button>

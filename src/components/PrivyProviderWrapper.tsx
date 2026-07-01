@@ -9,28 +9,7 @@ import {
 } from "@privy-io/react-auth";
 import { ArrowRight, X } from "lucide-react";
 
-// Unified type signature matching usePrivy
-interface PrivyContextType {
-  ready: boolean;
-  authenticated: boolean;
-  user: {
-    wallet?: { address: string };
-    email?: { address: string };
-  } | null;
-  login: () => void;
-  logout: () => void;
-}
-
-const CustomPrivyContext = createContext<PrivyContextType | null>(null);
-
-interface CustomAuthModalProps {
-  onClose: () => void;
-  isMock: boolean;
-  onMockLogin: (email: string) => void;
-  initOAuth?: (args: { provider: "google" | "apple" }) => void;
-  sendCode?: (args: { email: string }) => Promise<unknown>;
-  loginWithCode?: (args: { code: string }) => Promise<unknown>;
-}
+const CustomPrivyContext = createContext<TPrivyContextType | null>(null);
 
 // Custom Auth Modal with custom Email OTP and Google flows
 function CustomAuthModal({
@@ -40,7 +19,7 @@ function CustomAuthModal({
   initOAuth,
   sendCode,
   loginWithCode,
-}: CustomAuthModalProps) {
+}: TCustomAuthModalProps) {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"email" | "otp">("email");
@@ -282,14 +261,8 @@ function CustomAuthModal({
   );
 }
 
-interface ConsumerProps {
-  children: React.ReactNode;
-  isOpen: boolean;
-  setOpen: (open: boolean) => void;
-}
-
 // Real Privy provider connector
-function RealPrivyConsumer({ children, isOpen, setOpen }: ConsumerProps) {
+function RealPrivyConsumer({ children, isOpen, setOpen }: TConsumerProps) {
   const realPrivy = useRealPrivy();
 
   // Call the hooks at the root of RealPrivyConsumer so they are always mounted!
@@ -303,7 +276,7 @@ function RealPrivyConsumer({ children, isOpen, setOpen }: ConsumerProps) {
     setOpen(true); // Open our custom modal instead of Privy's default
   }, [setOpen]);
 
-  const mappedValue: PrivyContextType = {
+  const mappedValue: TPrivyContextType = {
     ready: realPrivy.ready,
     authenticated: realPrivy.authenticated,
     user: realPrivy.user,
@@ -329,7 +302,7 @@ function RealPrivyConsumer({ children, isOpen, setOpen }: ConsumerProps) {
 }
 
 // Local mock provider for sandbox environments
-function MockPrivyConsumer({ children, isOpen, setOpen }: ConsumerProps) {
+function MockPrivyConsumer({ children, isOpen, setOpen }: TConsumerProps) {
   const [authenticated, setAuthenticated] = useState(false);
   const [user, setUser] = useState<{
     wallet?: { address: string };
@@ -357,7 +330,7 @@ function MockPrivyConsumer({ children, isOpen, setOpen }: ConsumerProps) {
     setUser(null);
   };
 
-  const mockValue: PrivyContextType = {
+  const mockValue: TPrivyContextType = {
     ready: true,
     authenticated,
     user,
@@ -433,3 +406,33 @@ export function usePrivy() {
   }
   return ctx;
 }
+
+// ============================================================================
+// Types placed at the bottom of the file
+// ============================================================================
+
+type TPrivyContextType = {
+  ready: boolean;
+  authenticated: boolean;
+  user: {
+    wallet?: { address: string };
+    email?: { address: string };
+  } | null;
+  login: () => void;
+  logout: () => void;
+};
+
+type TCustomAuthModalProps = {
+  onClose: () => void;
+  isMock: boolean;
+  onMockLogin: (email: string) => void;
+  initOAuth?: (args: { provider: "google" | "apple" }) => void;
+  sendCode?: (args: { email: string }) => Promise<unknown>;
+  loginWithCode?: (args: { code: string }) => Promise<unknown>;
+};
+
+type TConsumerProps = {
+  children: React.ReactNode;
+  isOpen: boolean;
+  setOpen: (open: boolean) => void;
+};

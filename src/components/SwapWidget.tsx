@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { usePrivy } from "@/components/PrivyProviderWrapper";
 import { TTokenDetails } from "@/utils/solanaApi";
-import { Settings, Wallet, Check } from "lucide-react";
+import { Settings, Wallet } from "lucide-react";
 import confetti from "canvas-confetti";
 
 export default function SwapWidget({

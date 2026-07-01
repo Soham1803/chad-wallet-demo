@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Flame, Star, Coins, BarChart3, Bell, ArrowLeftRight, Columns, LayoutGrid, CheckCircle2, X, User, SlidersHorizontal, Volume2 } from "lucide-react";
+import { Star, Coins, BarChart3, Bell, ArrowLeftRight, Columns, LayoutGrid, CheckCircle2, X, User, SlidersHorizontal, Volume2 } from "lucide-react";
 import { TTokenDetails } from "@/utils/solanaApi";
 import Image from "next/image";
 

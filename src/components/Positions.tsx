@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { TTokenDetails } from "@/utils/solanaApi";
-import { ChevronDown, Share2, X, Sparkles } from "lucide-react";
+import { ChevronDown, X, Sparkles } from "lucide-react";
 import Image from "next/image";
 
 export default function Positions({
